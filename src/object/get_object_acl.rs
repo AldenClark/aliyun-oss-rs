@@ -1,0 +1,56 @@
+use crate::{
+    common::Acl,
+    error::normal_error,
+    request::{Oss, OssRequest},
+    Error,
+};
+use http::Method;
+use crate::common::body_to_bytes;
+use serde_derive::Deserialize;
+
+// Returned content
+/// Object ACL information
+#[derive(Debug, Deserialize)]
+struct AccessControlPolicy {
+    #[serde(rename = "AccessControlList")]
+    access_control_list: AccessControlList,
+}
+
+#[derive(Debug, Deserialize)]
+struct AccessControlList {
+    #[serde(rename = "Grant")]
+    grant: Acl,
+}
+
+/// Retrieve the object's ACL
+///
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31987.html) for details
+pub struct GetObjectAcl {
+    req: OssRequest,
+}
+impl GetObjectAcl {
+    pub(super) fn new(oss: Oss) -> Self {
+        let mut req = OssRequest::new(oss, Method::GET);
+        req.insert_query("acl", "");
+        GetObjectAcl { req }
+    }
+    /// Send the request
+    ///
+    pub async fn send(self) -> Result<Acl, Error> {
+        // Build the HTTP request
+        let response = self.req.send_to_oss()?.await?;
+        // Parse the response
+        let status_code = response.status();
+        match status_code {
+            code if code.is_success() => {
+                let response_bytes = body_to_bytes(response.into_body())
+                    .await
+                    .map_err(|_| Error::OssInvalidResponse(None))?;
+                let acl: AccessControlPolicy = serde_xml_rs::from_reader(&*response_bytes)
+                    .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
+                Ok(acl.access_control_list.grant)
+            }
+            _ => Err(normal_error(response).await),
+        }
+    }
+}
