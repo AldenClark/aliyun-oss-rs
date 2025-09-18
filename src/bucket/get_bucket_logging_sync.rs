@@ -1,5 +1,5 @@
 use crate::{
-    error::{normal_error_sync, Error},
+    error::{Error, normal_error_sync},
     request_sync::{Oss, OssRequest},
 };
 use bytes::Bytes;

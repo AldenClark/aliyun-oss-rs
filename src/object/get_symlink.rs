@@ -1,7 +1,7 @@
 use crate::{
+    Error,
     error::normal_error,
     request::{Oss, OssRequest},
-    Error,
 };
 use http::Method;
 use percent_encoding::percent_decode;

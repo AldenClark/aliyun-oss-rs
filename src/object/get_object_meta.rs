@@ -1,9 +1,8 @@
 use crate::{
-    error::OssError,
-    request::{Oss, OssRequest},
     Error,
+    request::{Oss, OssRequest},
 };
-use base64::{engine::general_purpose, Engine};
+use base64::{Engine, engine::general_purpose};
 use bytes::Bytes;
 use http::Method;
 use serde_derive::Deserialize;
@@ -77,8 +76,7 @@ impl GetObjectMeta {
                 match x_oss_error {
                     None => Err(Error::OssInvalidError(status_code, Bytes::new())),
                     Some(response_bytes) => {
-                        let oss_error =
-                            serde_xml_rs::from_reader(&*response_bytes);
+                        let oss_error = serde_xml_rs::from_reader(&*response_bytes);
                         match oss_error {
                             Ok(oss_error) => Err(Error::OssError(status_code, oss_error)),
                             Err(_) => Err(Error::OssInvalidError(status_code, response_bytes)),

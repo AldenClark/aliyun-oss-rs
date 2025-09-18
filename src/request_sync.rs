@@ -220,10 +220,14 @@ impl OssRequest {
             format!("OSS {}:{}", self.oss.ak_id, sign_str),
         );
     }
-    pub fn send_to_oss(mut self) -> Result<http::Response<Body>, Error> {
+    fn apply_security_token(&mut self) {
         if let Some(security_token) = self.oss.security_token.clone() {
             self.insert_header("x-oss-security-token", security_token);
-        };
+        }
+    }
+
+    pub fn send_to_oss(mut self) -> Result<http::Response<Body>, Error> {
+        self.apply_security_token();
         self.header_sign();
         let url = self.uri();
 
@@ -236,5 +240,22 @@ impl OssRequest {
         let request = builder.body(self.body.clone())?;
         let response = ureq::run(request)?;
         Ok(response)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_security_token_header_injected_sync() {
+        let mut oss = Oss::new("id", "secret");
+        oss.set_security_token("token");
+        let mut req = OssRequest::new(oss, Method::GET);
+        req.apply_security_token();
+        assert_eq!(
+            req.headers.get("x-oss-security-token").map(|s| s.as_str()),
+            Some("token")
+        );
     }
 }

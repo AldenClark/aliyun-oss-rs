@@ -1,10 +1,10 @@
 use super::{
-    del_object::DelObject, AbortUpload, AppendObject, CompleteUpload, CopyObject, CopyToPart,
-    DelObjectTagging, GetObject, GetObjectAcl, GetObjectMeta, GetObjectTagging, GetObjectUrl,
-    GetSymlink, HeadObject, InitUpload, ListParts, PutObject, PutObjectAcl, PutObjectTagging,
-    PutSymlink, RestoreObject, UploadPart,
-    };
-    use crate::{common::Acl, oss::Oss};
+    AbortUpload, AppendObject, CompleteUpload, CopyObject, CopyToPart, DelObjectTagging, GetObject,
+    GetObjectAcl, GetObjectMeta, GetObjectTagging, GetObjectUrl, GetSymlink, HeadObject,
+    InitUpload, ListParts, PutObject, PutObjectAcl, PutObjectTagging, PutSymlink, RestoreObject,
+    SelectObject, UploadPart, del_object::DelObject,
+};
+use crate::{common::Acl, oss::Oss};
 
 /// OSS object implementing APIs such as uploading and deleting files
 #[derive(Debug, Clone)]
@@ -16,6 +16,15 @@ impl OssObject {
     pub(crate) fn new(mut oss: Oss, object: impl ToString) -> Self {
         oss.set_object(object);
         OssObject { oss }
+    }
+    /// Attach a temporary security token for STS authentication
+    pub fn with_security_token(mut self, token: impl Into<String>) -> Self {
+        self.oss.set_security_token(token);
+        self
+    }
+    /// Update the security token in place for reuse
+    pub fn set_security_token(&mut self, token: impl Into<String>) {
+        self.oss.set_security_token(token);
     }
     /// Upload a file to OSS
     pub fn put_object(&self) -> PutObject {
@@ -52,6 +61,10 @@ impl OssObject {
     /// Get the object's content
     pub fn get_object(&self) -> GetObject {
         GetObject::new(self.oss.clone())
+    }
+    /// Query the object's content using OSS Select
+    pub fn select_object(&self) -> SelectObject {
+        SelectObject::new(self.oss.clone())
     }
     /// Copy the object
     pub fn copy_object(&self, copy_source: &str) -> CopyObject {

@@ -1,15 +1,15 @@
 use crate::{
     common::{
-        invalid_metadata_key, url_encode, Acl, CacheControl, ContentDisposition, StorageClass,
+        Acl, CacheControl, ContentDisposition, StorageClass, invalid_metadata_key, url_encode,
     },
-    error::{normal_error, Error},
+    error::{Error, normal_error},
     request::{Oss, OssRequest},
 };
-use futures_util::StreamExt;
-use http::{header, Method};
-use http_body_util::{StreamBody, Full};
-use http_body::Frame;
 use bytes::Bytes;
+use futures_util::StreamExt;
+use http::{Method, header};
+use http_body::Frame;
+use http_body_util::{Full, StreamBody};
 use std::collections::HashMap;
 use tokio::{fs::File, io::BufReader};
 use tokio_util::io::ReaderStream;

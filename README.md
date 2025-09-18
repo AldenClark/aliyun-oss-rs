@@ -13,13 +13,13 @@ Add the dependency in your `Cargo.toml`:
 
 ```toml
 # Async by default
-aliyun-oss-rs = { version = "0.1.0" }
+aliyun-oss-rs = { version = "0.1.1" }
 ```
 
 Enable synchronous APIs if needed:
 
 ```toml
-aliyun-oss-rs = { version = "0.1.0", features = ["sync"] }
+aliyun-oss-rs = { version = "0.1.1", features = ["sync"] }
 ```
 
 ## Quick Start (Async)
@@ -41,6 +41,8 @@ async fn main() {
     println!("buckets = {:?}", buckets);
 }
 ```
+
+> Need to work with STS credentials? Use `OssClient::with_security_token(token)` (or the corresponding bucket/object helpers) before sending requests.
 
 ## Common Operations (Async)
 
@@ -131,7 +133,8 @@ async fn main() {
 Synchronous notes:
 
 - When enabling `features = ["sync"]`, several bucket-level APIs offer `*_sync` variants (e.g. `get_bucket_location_sync`).
-- For object operations that are async-only, you can either use async or call them via the provided `blocking::block_on(...)` helper when the `sync` feature is enabled.
+- For object operations that remain async-only, prefer using async directly for now;
+  the `sync` feature set will continue to expand over time.
 
 ## Implemented APIs
 
@@ -153,10 +156,19 @@ Synchronous notes:
   - [x] Get bucket logging (`GetBucketLogging`)
   - [x] Set bucket logging (`PutBucketLogging`)
   - [x] Delete bucket logging (`DeleteBucketLogging`)
+  - [x] Manage bucket CORS (`Get/Put/DeleteBucketCors`)
+  - [x] Manage lifecycle rules (`Get/Put/DeleteBucketLifecycle`)
+  - [x] Configure referer protection (`Get/Put/DeleteBucketReferer`)
+  - [x] Configure static website hosting (`Get/Put/DeleteBucketWebsite`)
+  - [x] Manage bucket policies (`Get/Put/DeleteBucketPolicy`)
+  - [x] Manage default encryption (`Get/Put/DeleteBucketEncryption`)
+  - [x] Work with WORM retention (`Initiate/Get/Complete/Extend/AbortBucketWorm`)
+  - [x] Configure inventory reports (`Put/Get/Delete/ListBucketInventory`)
 
 - Object operations
   - [x] Upload object (`PutObject`)
   - [x] Download object (`GetObject`)
+  - [x] Query object with OSS Select (`SelectObject`)
   - [x] Copy object (`CopyObject`)
   - [x] Append object (`AppendObject`)
   - [x] Delete object (`DeleteObject`)

@@ -1,11 +1,11 @@
 use crate::{
+    Error,
     common::RestoreTier,
     error::normal_error,
     request::{Oss, OssRequest},
-    Error,
 };
-use http::Method;
 use bytes::Bytes;
+use http::Method;
 use http_body_util::Full;
 
 /// Restore an archived object

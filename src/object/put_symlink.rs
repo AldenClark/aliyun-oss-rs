@@ -1,8 +1,8 @@
 use crate::{
+    Error,
     common::{Acl, StorageClass},
     error::normal_error,
     request::{Oss, OssRequest},
-    Error,
 };
 use http::Method;
 

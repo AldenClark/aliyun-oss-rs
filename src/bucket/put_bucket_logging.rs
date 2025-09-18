@@ -1,10 +1,10 @@
 use crate::{
+    Error,
     error::normal_error,
     request::{Oss, OssRequest},
-    Error,
 };
-use http::Method;
 use bytes::Bytes;
+use http::Method;
 use http_body_util::Full;
 
 /// Enable or update the bucket logging configuration

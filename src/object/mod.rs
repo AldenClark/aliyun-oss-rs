@@ -11,7 +11,7 @@ pub use self::{
     multipart_copyto_part::CopyToPart, multipart_init_upload::InitUpload,
     multipart_list_parts::ListParts, multipart_upload_part::UploadPart, put_object::PutObject,
     put_object_acl::PutObjectAcl, put_object_tagging::PutObjectTagging, put_symlink::PutSymlink,
-    restore_object::RestoreObject,
+    restore_object::RestoreObject, select_object::SelectObject,
 };
 
 mod append_object;
@@ -37,3 +37,4 @@ mod put_object_acl;
 mod put_object_tagging;
 mod put_symlink;
 mod restore_object;
+mod select_object;

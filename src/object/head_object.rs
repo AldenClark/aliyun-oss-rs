@@ -1,7 +1,6 @@
 use crate::common::format_gmt;
 use crate::{
     Error,
-    error::OssError,
     request::{Oss, OssRequest},
 };
 use base64::{Engine, engine::general_purpose};

@@ -1,11 +1,11 @@
 use crate::{
+    Error,
     common::{Acl, DataRedundancyType, StorageClass},
     error::normal_error,
     request::{Oss, OssRequest},
-    Error,
 };
-use http::Method;
 use bytes::Bytes;
+use http::Method;
 use http_body_util::Full;
 use serde_derive::Serialize;
 use serde_xml_rs::to_string;
@@ -54,7 +54,10 @@ impl PutBucket {
         let body_str = format!(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CreateBucketConfiguration>{}{}</CreateBucketConfiguration>",
             storage_class.to_string(),
-            self.data_redundancy_type.map_or(String::new(),|v|format!("<DataRedundancyType>{}</DataRedundancyType>",v.to_string()))
+            self.data_redundancy_type.map_or(String::new(), |v| format!(
+                "<DataRedundancyType>{}</DataRedundancyType>",
+                v.to_string()
+            ))
         );
         self.storage_class = Some(storage_class);
         self.req.set_body(Full::new(Bytes::from(body_str)));
@@ -64,7 +67,9 @@ impl PutBucket {
     pub fn set_redundancy_type(mut self, redundancy_type: DataRedundancyType) -> Self {
         let body_str = format!(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CreateBucketConfiguration>{}{}</CreateBucketConfiguration>",
-            self.storage_class.map(|v|format!("<StorageClass>{}</StorageClass>",v.to_string())).unwrap_or_else(||String::new()),
+            self.storage_class
+                .map(|v| format!("<StorageClass>{}</StorageClass>", v.to_string()))
+                .unwrap_or_else(|| String::new()),
             redundancy_type.to_string()
         );
         self.req.set_body(Full::new(Bytes::from(body_str)));

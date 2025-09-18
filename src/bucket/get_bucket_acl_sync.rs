@@ -1,6 +1,6 @@
 use crate::{
-    common::{Acl, Owner},
-    error::{normal_error_sync, Error},
+    common::{Acl, BucketAcl, Owner},
+    error::{Error, normal_error_sync},
     request_sync::{Oss, OssRequest},
 };
 use bytes::Bytes;
@@ -34,7 +34,7 @@ impl GetBucketAclSync {
         GetBucketAclSync { req }
     }
     /// Send the request
-    pub fn send(self) -> Result<Acl, Error> {
+    pub fn send(self) -> Result<BucketAcl, Error> {
         let response = self.req.send_to_oss()?;
         let status = response.status();
         if status.is_success() {
@@ -43,7 +43,10 @@ impl GetBucketAclSync {
             reader.read_to_end(&mut buf)?;
             let result: AccessControlPolicy = serde_xml_rs::from_reader(&*buf)
                 .map_err(|_| Error::OssInvalidResponse(Some(Bytes::from(buf))))?;
-            Ok(result.access_control_list.grant)
+            Ok(BucketAcl {
+                owner: result.owner,
+                acl: result.access_control_list.grant,
+            })
         } else {
             Err(normal_error_sync(response))
         }

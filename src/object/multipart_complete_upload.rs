@@ -1,9 +1,9 @@
 use crate::{
-    error::{normal_error, Error},
+    error::{Error, normal_error},
     request::{Oss, OssRequest},
 };
-use http::Method;
 use bytes::Bytes;
+use http::Method;
 use http_body_util::Full;
 
 /// Complete the multipart upload

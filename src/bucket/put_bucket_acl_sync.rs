@@ -1,6 +1,6 @@
 use crate::{
     common::Acl,
-    error::{normal_error_sync, Error},
+    error::{Error, normal_error_sync},
     request_sync::{Oss, OssRequest},
 };
 use http::Method;

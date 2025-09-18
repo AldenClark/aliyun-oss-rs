@@ -291,6 +291,13 @@ pub struct Owner {
     pub display_name: String,
 }
 
+/// Result returned by `GetBucketAcl`, containing the owner and ACL.
+#[derive(Debug)]
+pub struct BucketAcl {
+    pub owner: Owner,
+    pub acl: Acl,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

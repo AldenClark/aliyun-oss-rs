@@ -1,15 +1,15 @@
-use bytes::Bytes;
-use serde_derive::Deserialize;
-use thiserror::Error;
-use http::StatusCode;
-#[cfg(feature = "async")]
-use hyper::{body::Incoming, Response};
-#[cfg(feature = "async")]
-use hyper_util::client::legacy::Error as HyperClientError;
 #[cfg(feature = "async")]
 use crate::common::body_to_bytes;
+use bytes::Bytes;
+use http::StatusCode;
+#[cfg(feature = "async")]
+use hyper::{Response, body::Incoming};
+#[cfg(feature = "async")]
+use hyper_util::client::legacy::Error as HyperClientError;
+use serde_derive::Deserialize;
 #[cfg(feature = "sync")]
 use std::io::Read;
+use thiserror::Error;
 #[cfg(feature = "sync")]
 use ureq::{self, Body};
 
@@ -40,6 +40,8 @@ pub enum Error {
     OssInvalidError(StatusCode, Bytes),
     #[error("使用了不符合要求的字符")]
     InvalidCharacter,
+    #[error("请求缺少必要的消息体，请检查调用参数")]
+    MissingRequestBody,
 }
 
 #[derive(Debug, Deserialize)]

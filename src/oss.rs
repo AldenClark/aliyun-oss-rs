@@ -16,10 +16,10 @@ pub(crate) struct Oss {
 impl Oss {
     pub fn new(ak_id: &str, ak_secret: &str) -> Self {
         Oss {
-            ak_id: ak_id.to_owned().into(),
-            ak_secret: ak_secret.to_owned().into(),
+            ak_id: Cow::Owned(ak_id.to_owned()),
+            ak_secret: Cow::Owned(ak_secret.to_owned()),
             security_token: None,
-            endpoint: "oss.aliyuncs.com".to_owned().into(),
+            endpoint: Cow::Borrowed("oss.aliyuncs.com"),
             custom_domain: None,
             bucket: None,
             object: None,
@@ -28,15 +28,15 @@ impl Oss {
     }
 
     pub fn set_bucket(&mut self, bucket: impl ToString) {
-        self.bucket = Some(bucket.to_string().into());
+        self.bucket = Some(Cow::Owned(bucket.to_string()));
     }
 
     pub fn set_object(&mut self, object: impl ToString) {
-        self.object = Some(object.to_string().into());
+        self.object = Some(Cow::Owned(object.to_string()));
     }
 
     pub fn set_endpoint(&mut self, endpoint: impl ToString) {
-        self.endpoint = endpoint.to_string().into();
+        self.endpoint = Cow::Owned(endpoint.to_string());
     }
 
     pub fn set_https(&mut self, enable: bool) {
@@ -44,11 +44,11 @@ impl Oss {
     }
 
     pub fn set_custom_domain(&mut self, domain: impl ToString) {
-        self.custom_domain = Some(domain.to_string().into());
+        self.custom_domain = Some(Cow::Owned(domain.to_string()));
     }
 
-    pub fn set_security_token(&mut self, token: impl ToString) {
-        self.security_token = Some(token.to_string().into());
+    pub fn set_security_token(&mut self, token: impl Into<String>) {
+        self.security_token = Some(Cow::Owned(token.into()));
     }
 }
 

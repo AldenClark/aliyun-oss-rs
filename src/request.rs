@@ -12,6 +12,7 @@ use hyper_tls::HttpsConnector;
 use hyper_util::client::legacy::{Client, ResponseFuture};
 use hyper_util::rt::TokioExecutor;
 use ring::hmac;
+use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error as StdError;
 use time::OffsetDateTime;
@@ -44,7 +45,7 @@ impl OssRequest {
 
     /// Override the endpoint used for the request.
     pub fn set_endpoint(&mut self, endpoint: impl ToString) -> &mut Self {
-        self.oss.endpoint = endpoint.to_string().into();
+        self.oss.endpoint = Cow::Owned(endpoint.to_string());
         self
     }
 
@@ -302,11 +303,15 @@ impl OssRequest {
         );
     }
 
-    pub fn send_to_oss(mut self) -> Result<ResponseFuture, Error> {
-        // insert temporary security token if provided
+    fn apply_security_token(&mut self) {
         if let Some(security_token) = self.oss.security_token.clone() {
             self.insert_header("x-oss-security-token", security_token);
         }
+    }
+
+    pub fn send_to_oss(mut self) -> Result<ResponseFuture, Error> {
+        // insert temporary security token if provided
+        self.apply_security_token();
         // sign headers
         self.header_sign();
         // build http request
@@ -352,5 +357,17 @@ mod tests {
         assert!(uri.contains("Signature="));
         assert!(uri.contains("OSSAccessKeyId=id"));
         assert!(uri.contains("Expires=0"));
+    }
+
+    #[test]
+    fn test_security_token_header_injected() {
+        let mut oss = Oss::new("id", "secret");
+        oss.set_security_token("token");
+        let mut req = OssRequest::new(oss, Method::GET);
+        req.apply_security_token();
+        assert_eq!(
+            req.headers.get("x-oss-security-token").map(|s| s.as_str()),
+            Some("token")
+        );
     }
 }

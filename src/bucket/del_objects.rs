@@ -1,11 +1,11 @@
 use crate::{
+    Error,
     error::normal_error,
     request::{Oss, OssRequest},
-    Error,
 };
-use base64::{engine::general_purpose, Engine};
-use http::Method;
+use base64::{Engine, engine::general_purpose};
 use bytes::Bytes;
+use http::Method;
 use http_body_util::Full;
 use md5::{Digest, Md5};
 use std::collections::HashSet;

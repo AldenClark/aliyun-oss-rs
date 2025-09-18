@@ -1,11 +1,11 @@
+use crate::common::body_to_bytes;
 use crate::{
+    Error,
     common::{Owner, StorageClass},
     error::normal_error,
     request::{Oss, OssRequest},
-    Error,
 };
 use http::Method;
-use crate::common::body_to_bytes;
 use serde_derive::Deserialize;
 use std::cmp;
 

@@ -1,5 +1,5 @@
 use crate::{
-    error::{normal_error, Error},
+    error::{Error, normal_error},
     request::{Oss, OssRequest},
 };
 use http::Method;
