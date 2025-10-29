@@ -8,6 +8,9 @@ use http::{Method, header};
 use http_body::Body as HttpBody;
 use http_body_util::{BodyExt, Empty, combinators::BoxBody};
 use hyper::Request;
+#[cfg(feature = "rustls")]
+use hyper_rustls::HttpsConnectorBuilder;
+#[cfg(feature = "native-tls")]
 use hyper_tls::HttpsConnector;
 use hyper_util::client::legacy::{Client, ResponseFuture};
 use hyper_util::rt::TokioExecutor;
@@ -321,7 +324,16 @@ impl OssRequest {
         }
         let request = req.body(self.body)?;
         if self.oss.enable_https {
+            #[cfg(feature = "native-tls")]
             let https = HttpsConnector::new();
+            #[cfg(feature = "rustls")]
+            let https = HttpsConnectorBuilder::new()
+                .with_native_roots()
+                .expect("no native root CA certificates found")
+                .https_or_http()
+                .enable_http1()
+                .enable_http2()
+                .build();
             let client: Client<_, BoxBody<Bytes, Box<dyn StdError + Send + Sync>>> =
                 Client::builder(TokioExecutor::new()).build(https);
             Ok(client.request(request))
