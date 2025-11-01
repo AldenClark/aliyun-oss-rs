@@ -41,7 +41,7 @@ static GMT_FORMAT: OnceLock<Vec<format_description::FormatItem<'static>>> = Once
 pub(crate) fn format_gmt(datetime: OffsetDateTime) -> String {
     let format = GMT_FORMAT.get_or_init(|| {
         format_description::parse(
-            "[weekday repr:short], [day padding:space] [month repr:short] [year] [hour]:[minute]:[second] GMT",
+            "[weekday repr:short], [day] [month repr:short] [year] [hour]:[minute]:[second] GMT",
         )
         .expect("valid format")
     });
