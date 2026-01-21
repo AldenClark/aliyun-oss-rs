@@ -5,21 +5,27 @@ use crate::{
 };
 use http::Method;
 
-/// Delete the referer configuration of a bucket.
+/// Delete bucket tags.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/deletebucketreferer) for details.
-pub struct DelBucketReferer {
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/deletebuckettags) for details.
+///
+/// 删除 Bucket 标签。
+///
+/// 详情见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/deletebuckettags)。
+pub struct DelBucketTags {
     req: OssRequest,
 }
 
-impl DelBucketReferer {
+impl DelBucketTags {
     pub(super) fn new(oss: Oss) -> Self {
         let mut req = OssRequest::new(oss, Method::DELETE);
-        req.insert_query("referer", "");
-        DelBucketReferer { req }
+        req.insert_query("tagging", "");
+        DelBucketTags { req }
     }
 
     /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(self) -> Result<(), Error> {
         let response = self.req.send_to_oss()?.await?;
         match response.status() {

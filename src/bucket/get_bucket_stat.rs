@@ -8,61 +8,113 @@ use http::Method;
 use serde_derive::Deserialize;
 
 // Returned content
-/// Bucket capacity information
+/// Bucket storage statistics.
+///
+/// Bucket 存储统计信息。
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct BucketStat {
-    /// Total storage size in bytes
+    /// Total storage size in bytes.
+    ///
+    /// 总存储量（字节）。
     pub storage: u64,
-    /// Total number of files
+    /// Total object count.
+    ///
+    /// 对象总数。
     pub object_count: u64,
-    /// Number of multipart uploads that have been initiated but not completed or aborted
+    /// Multipart uploads initiated but not completed or aborted.
+    ///
+    /// 未完成或未取消的分片上传数量。
     pub multipart_upload_count: u64,
-    /// Number of Live Channels
+    /// Live channel count.
+    ///
+    /// Live Channel 数量。
     pub live_channel_count: u64,
-    /// Time when the storage information was obtained, as a timestamp in seconds
+    /// Timestamp in seconds when stats were generated.
+    ///
+    /// 统计生成时间戳（秒）。
     pub last_modified_time: u64,
-    /// Storage size of Standard storage class in bytes
+    /// Standard storage size in bytes.
+    ///
+    /// 标准存储量（字节）。
     pub standard_storage: u64,
-    /// Number of files in Standard storage class
+    /// Standard storage object count.
+    ///
+    /// 标准存储对象数量。
     pub standard_object_count: u64,
-    /// Billable storage size for Infrequent Access in bytes
+    /// Billable Infrequent Access storage in bytes.
+    ///
+    /// 低频存储计费量（字节）。
     pub infrequent_access_storage: u64,
-    /// Actual storage size for Infrequent Access in bytes
+    /// Actual Infrequent Access storage in bytes.
+    ///
+    /// 低频存储实际量（字节）。
     pub infrequent_access_real_storage: u64,
-    /// Number of files in Infrequent Access
+    /// Infrequent Access object count.
+    ///
+    /// 低频存储对象数量。
     pub infrequent_access_object_count: u64,
-    /// Billable storage size for Archive in bytes
+    /// Billable Archive storage in bytes.
+    ///
+    /// 归档存储计费量（字节）。
     pub archive_storage: u64,
-    /// Actual storage size for Archive in bytes
+    /// Actual Archive storage in bytes.
+    ///
+    /// 归档存储实际量（字节）。
     pub archive_real_storage: u64,
-    /// Number of files in Archive
+    /// Archive object count.
+    ///
+    /// 归档存储对象数量。
     pub archive_object_count: u64,
-    /// Billable storage size for Cold Archive in bytes
+    /// Billable Cold Archive storage in bytes.
+    ///
+    /// 冷归档存储计费量（字节）。
     pub cold_archive_storage: u64,
-    /// Actual storage size for Cold Archive in bytes
+    /// Actual Cold Archive storage in bytes.
+    ///
+    /// 冷归档存储实际量（字节）。
     pub cold_archive_real_storage: u64,
-    /// Number of files in Cold Archive
+    /// Cold Archive object count.
+    ///
+    /// 冷归档对象数量。
     pub cold_archive_object_count: u64,
-    /// Used reserved capacity
+    /// Used reserved capacity in bytes.
+    ///
+    /// 预留容量使用量（字节）。
     pub reserved_capacity_storage: u64,
-    /// Number of files using reserved capacity
+    /// Reserved capacity object count.
+    ///
+    /// 预留容量对象数量。
     pub reserved_capacity_object_count: u64,
-    /// Billable storage size for Deep Cold Archive in bytes
+    /// Billable Deep Cold Archive storage in bytes.
+    ///
+    /// 深冷归档计费量（字节）。
     pub deep_cold_archive_storage: u64,
-    /// Actual storage size for Deep Cold Archive in bytes
+    /// Actual Deep Cold Archive storage in bytes.
+    ///
+    /// 深冷归档实际量（字节）。
     pub deep_cold_archive_real_storage: u64,
-    /// Number of files in Deep Cold Archive
+    /// Deep Cold Archive object count.
+    ///
+    /// 深冷归档对象数量。
     pub deep_cold_archive_object_count: u64,
 }
 
-/// Retrieve the storage size and file count of a bucket
+/// Retrieve bucket storage size and object counts.
 ///
-/// The data is not real-time and may be delayed by over an hour
+/// Data is not real-time and may lag by more than one hour.
 ///
-/// The returned time point is not guaranteed to be the latest; a later call may return a smaller LastModifiedTime than a previous call
+/// The returned timestamp may not be the latest; later calls can return a smaller value.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/426056.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/426056.html) for details.
+///
+/// 获取 Bucket 存储量与对象数量。
+///
+/// 数据非实时，可能延迟超过 1 小时。
+///
+/// 返回时间不保证最新；后续调用可能返回更小的时间戳。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/426056.html)。
 pub struct GetBucketStat {
     req: OssRequest,
 }
@@ -73,7 +125,9 @@ impl GetBucketStat {
         GetBucketStat { req }
     }
 
-    /// Send the request
+    /// Send the request and return statistics.
+    ///
+    /// 发送请求并返回统计信息。
     pub async fn send(self) -> Result<BucketStat, Error> {
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

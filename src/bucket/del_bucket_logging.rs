@@ -5,9 +5,13 @@ use crate::{
 };
 use http::Method;
 
-/// Delete the bucket logging configuration
+/// Delete the bucket logging configuration.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/deletebucketlogging) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/deletebucketlogging) for details.
+///
+/// 删除 Bucket 日志配置。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/deletebucketlogging)。
 pub struct DelBucketLogging {
     req: OssRequest,
 }
@@ -17,7 +21,9 @@ impl DelBucketLogging {
         req.insert_query("logging", "");
         DelBucketLogging { req }
     }
-    /// Send the request
+    /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(self) -> Result<(), Error> {
         let response = self.req.send_to_oss()?.await?;
         let status_code = response.status();

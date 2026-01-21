@@ -8,9 +8,13 @@ use http::Method;
 
 use super::{CorsConfiguration, CorsRule};
 
-/// Retrieve the CORS rules of a bucket
+/// Retrieve the CORS rules of a bucket.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/getbucketcors) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/getbucketcors) for details.
+///
+/// 获取 Bucket 的 CORS 规则。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/getbucketcors)。
 pub struct GetBucketCors {
     req: OssRequest,
 }
@@ -22,7 +26,9 @@ impl GetBucketCors {
         GetBucketCors { req }
     }
 
-    /// Send the request
+    /// Send the request and return CORS rules.
+    ///
+    /// 发送请求并返回 CORS 规则。
     pub async fn send(self) -> Result<Vec<CorsRule>, Error> {
         let response = self.req.send_to_oss()?.await?;
         let status_code = response.status();

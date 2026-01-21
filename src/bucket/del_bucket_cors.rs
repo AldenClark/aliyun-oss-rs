@@ -5,9 +5,13 @@ use crate::{
 };
 use http::Method;
 
-/// Delete all CORS rules configured on the bucket
+/// Delete all CORS rules configured on the bucket.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/deletebucketcors) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/deletebucketcors) for details.
+///
+/// 删除 Bucket 的所有 CORS 规则。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/deletebucketcors)。
 pub struct DelBucketCors {
     req: OssRequest,
 }
@@ -19,7 +23,9 @@ impl DelBucketCors {
         DelBucketCors { req }
     }
 
-    /// Send the request
+    /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(self) -> Result<(), Error> {
         let response = self.req.send_to_oss()?.await?;
         let status_code = response.status();

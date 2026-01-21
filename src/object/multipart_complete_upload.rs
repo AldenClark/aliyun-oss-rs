@@ -6,31 +6,36 @@ use bytes::Bytes;
 use http::Method;
 use http_body_util::Full;
 
-/// Complete the multipart upload
+/// Complete a multipart upload.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31995.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31995.html) for details.
+///
+/// 完成分片上传。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31995.html)。
 pub struct CompleteUpload<'a> {
     req: OssRequest,
     parts: Vec<(&'a str, &'a str)>,
 }
 impl<'a> CompleteUpload<'a> {
-    pub(super) fn new(oss: Oss, upload_id: impl ToString) -> Self {
+    pub(super) fn new(oss: Oss, upload_id: impl Into<String>) -> Self {
         let mut req = OssRequest::new(oss, Method::POST);
-        req.insert_query("uploadId", upload_id);
+        req.insert_query("uploadId", upload_id.into());
         CompleteUpload {
             req,
             parts: Vec::new(),
         }
     }
-    /// Add part information
+    /// Add part information in `(PartNumber, ETag)` pairs.
     ///
-    /// Data structure: (PartNumber, ETag)
+    /// 添加分片信息，格式为 `(PartNumber, ETag)`。
     pub fn add_parts(mut self, parts: Vec<(&'a str, &'a str)>) -> Self {
         self.parts.extend(parts);
         self
     }
-    /// Complete the multipart upload
+    /// Send the complete request.
     ///
+    /// 发送完成请求。
     pub async fn send(mut self) -> Result<(), Error> {
         // Build body
         let body = format!(
@@ -46,7 +51,8 @@ impl<'a> CompleteUpload<'a> {
         );
         let body_len = body.len();
         self.req.set_body(Full::new(Bytes::from(body)));
-        self.req.insert_header("Content-Length", body_len);
+        self.req
+            .insert_header("Content-Length", body_len.to_string());
         // Upload file
         let response = self.req.send_to_oss()?.await?;
         // Parse the response

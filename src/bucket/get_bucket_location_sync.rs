@@ -13,7 +13,9 @@ struct LocationConstraint {
     location_constraint: String,
 }
 
-/// Retrieve bucket location information (synchronous)
+/// Retrieve bucket location (sync).
+///
+/// 获取 Bucket 所在地域（同步）。
 pub struct GetBucketLocationSync {
     req: OssRequest,
 }
@@ -23,7 +25,9 @@ impl GetBucketLocationSync {
         req.insert_query("location", "");
         GetBucketLocationSync { req }
     }
-    /// Send the request
+    /// Send the request and return the region identifier.
+    ///
+    /// 发送请求并返回地域标识。
     pub fn send(self) -> Result<String, Error> {
         let response = self.req.send_to_oss()?;
         let status = response.status();

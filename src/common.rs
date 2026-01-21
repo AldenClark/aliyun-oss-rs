@@ -1,7 +1,9 @@
-//! Common data definitions
+//! Common data definitions.
 //!
-//!
+//! 通用数据定义。
 #[cfg(feature = "async")]
+use bytes::Bytes;
+#[cfg(feature = "sync")]
 use bytes::Bytes;
 #[cfg(feature = "async")]
 use http_body_util::BodyExt;
@@ -10,15 +12,35 @@ use hyper::body::Incoming;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt;
+#[cfg(feature = "sync")]
+use std::io::Read;
 use std::sync::OnceLock;
 use time::{OffsetDateTime, UtcOffset, format_description};
+#[cfg(feature = "sync")]
+use ureq::Body;
 
 // -------------------------- Common functions --------------------------
-// Encode query parameter values
-const URL_ENCODE: &AsciiSet = &NON_ALPHANUMERIC.remove(b'-').remove(b'/');
+// Encode query parameter values (RFC 3986, space as %20).
+const URL_ENCODE: &AsciiSet = &NON_ALPHANUMERIC
+    .remove(b'-')
+    .remove(b'_')
+    .remove(b'.')
+    .remove(b'~');
+// Encode object key path segments while preserving '/'.
+const URL_PATH_ENCODE: &AsciiSet = &NON_ALPHANUMERIC
+    .remove(b'-')
+    .remove(b'_')
+    .remove(b'.')
+    .remove(b'~')
+    .remove(b'/');
 #[inline]
 pub(crate) fn url_encode(input: &str) -> String {
     utf8_percent_encode(input, URL_ENCODE).to_string()
+}
+
+#[inline]
+pub(crate) fn url_encode_path(input: &str) -> String {
+    utf8_percent_encode(input, URL_PATH_ENCODE).to_string()
 }
 
 // Check if metadata keys are valid
@@ -33,6 +55,15 @@ pub(crate) fn invalid_metadata_key(input: &str) -> bool {
 #[inline]
 pub(crate) async fn body_to_bytes(body: Incoming) -> Result<Bytes, hyper::Error> {
     Ok(body.collect().await?.to_bytes())
+}
+
+#[cfg(feature = "sync")]
+#[inline]
+pub(crate) fn body_to_bytes_sync(body: Body) -> Result<Bytes, std::io::Error> {
+    let mut reader = body.into_reader();
+    let mut buf = Vec::new();
+    reader.read_to_end(&mut buf)?;
+    Ok(Bytes::from(buf))
 }
 
 static GMT_FORMAT: OnceLock<Vec<format_description::FormatItem<'static>>> = OnceLock::new();
@@ -51,115 +82,31 @@ pub(crate) fn format_gmt(datetime: OffsetDateTime) -> String {
         .expect("formatting")
 }
 
-/// Query parameters that should be included in the canonicalized resource
-/// when signing requests. These values are derived from the officially
-/// maintained SDKs for other languages to keep parity.
-///
-/// Parameters beginning with `x-oss-` are automatically included and therefore
-/// omitted from this list.
-pub(crate) const EXCLUDED_VALUES: [&str; 85] = [
-    "accessPoint",
-    "accessPointPolicy",
-    "acl",
-    "append",
-    "asyncFetch",
-    "bucketArchiveDirectRead",
-    "bucketInfo",
-    "callback",
-    "callback-var",
-    "cname",
-    "comp",
-    "continuation-token",
-    "cors",
-    "delete",
-    "encryption",
-    "endTime",
-    "group",
-    "httpsConfig",
-    "img",
-    "inventory",
-    "inventoryId",
-    "lifecycle",
-    "link",
-    "live",
-    "location",
-    "logging",
-    "metaQuery",
-    "objectInfo",
-    "objectMeta",
-    "partNumber",
-    "policy",
-    "policyStatus",
-    "position",
-    "processConfiguration",
-    "publicAccessBlock",
-    "qos",
-    "qosInfo",
-    "qosRequester",
-    "redundancyTransition",
-    "referer",
-    "regionList",
-    "replication",
-    "replicationLocation",
-    "replicationProgress",
-    "requestPayment",
-    "requesterQosInfo",
-    "resourceGroup",
-    "resourcePool",
-    "resourcePoolBuckets",
-    "resourcePoolInfo",
-    "response-cache-control",
-    "response-content-disposition",
-    "response-content-encoding",
-    "response-content-language",
-    "response-content-type",
-    "response-expires",
-    "restore",
-    "security-token",
-    "sequential",
-    "startTime",
-    "stat",
-    "status",
-    "style",
-    "styleName",
-    "symlink",
-    "tagging",
-    "transferAcceleration",
-    "udf",
-    "udfApplication",
-    "udfApplicationLog",
-    "udfImage",
-    "udfImageDesc",
-    "udfName",
-    "uploadId",
-    "uploads",
-    "versionId",
-    "versioning",
-    "versions",
-    "vip",
-    "vod",
-    "vpcip",
-    "website",
-    "worm",
-    "wormExtend",
-    "wormId",
-];
-
 // -------------------------- Common data --------------------------
 
-/// Access permissions (ACL)
+/// Access permissions (ACL).
+///
+/// 访问权限（ACL）。
 #[derive(Debug, Deserialize, Clone)]
 pub enum Acl {
-    /// Only for object ACL; indicates the object's ACL inherits the bucket ACL
+    /// Only for object ACL; the object inherits the bucket ACL.
+    ///
+    /// 仅用于对象 ACL；表示对象继承 Bucket ACL。
     #[serde(rename = "default")]
     Default,
-    /// Private; all read and write requests require authorization
+    /// Private; all requests require authorization.
+    ///
+    /// 私有；所有请求需要授权。
     #[serde(rename = "private")]
     Private,
-    /// Public read; objects can be read anonymously but not written
+    /// Public read; anonymous reads are allowed.
+    ///
+    /// 公共读；允许匿名读取。
     #[serde(rename = "public-read")]
     PublicRead,
-    /// Public read/write; objects can be read and written anonymously
+    /// Public read/write; anonymous reads and writes are allowed.
+    ///
+    /// 公共读写；允许匿名读写。
     #[serde(rename = "public-read-write")]
     PublicReadWrite,
 }
@@ -175,18 +122,30 @@ impl fmt::Display for Acl {
     }
 }
 
-/// Storage class
-#[derive(Debug, Clone, Serialize, Deserialize, Copy)]
+/// Storage class.
+///
+/// 存储类型。
+#[derive(Debug, Clone, Serialize, Deserialize, Copy, PartialEq)]
 pub enum StorageClass {
-    /// Standard storage
+    /// Standard storage.
+    ///
+    /// 标准存储。
     Standard,
-    /// Infrequent access
+    /// Infrequent access.
+    ///
+    /// 低频访问。
     IA,
-    /// Archive storage
+    /// Archive storage.
+    ///
+    /// 归档存储。
     Archive,
-    /// Cold archive storage
+    /// Cold archive storage.
+    ///
+    /// 冷归档存储。
     ColdArchive,
-    /// Deep cold archive storage
+    /// Deep cold archive storage.
+    ///
+    /// 深度冷归档存储。
     DeepColdArchive,
 }
 impl fmt::Display for StorageClass {
@@ -201,12 +160,18 @@ impl fmt::Display for StorageClass {
     }
 }
 
-/// Data redundancy type
-#[derive(Debug, Clone, Serialize, Deserialize, Copy)]
+/// Data redundancy type.
+///
+/// 数据冗余类型。
+#[derive(Debug, Clone, Serialize, Deserialize, Copy, PartialEq)]
 pub enum DataRedundancyType {
-    /// Local redundancy (LRS) stores data on multiple devices within the same availability zone; up to two devices can fail simultaneously without data loss and access remains normal.
+    /// Local redundancy (LRS) stores data on multiple devices within one zone.
+    ///
+    /// 本地冗余（LRS）在同一可用区内多设备冗余存储。
     LRS,
-    /// Zonal redundancy (ZRS) stores data redundantly across multiple availability zones in the same region, ensuring access even if one zone becomes unavailable.
+    /// Zonal redundancy (ZRS) stores data across multiple zones in one region.
+    ///
+    /// 同城冗余（ZRS）在同一地域多可用区冗余存储。
     ZRS,
 }
 impl fmt::Display for DataRedundancyType {
@@ -218,14 +183,22 @@ impl fmt::Display for DataRedundancyType {
     }
 }
 
-/// Restore priority
+/// Restore priority.
+///
+/// 解冻优先级。
 #[derive(Debug, Clone, Serialize, Deserialize, Copy)]
 pub enum RestoreTier {
-    /// Expedited
+    /// Expedited.
+    ///
+    /// 极速解冻。
     Expedited,
-    /// Standard
+    /// Standard.
+    ///
+    /// 标准解冻。
     Standard,
-    /// Bulk
+    /// Bulk.
+    ///
+    /// 批量解冻。
     Bulk,
 }
 impl fmt::Display for RestoreTier {
@@ -238,13 +211,30 @@ impl fmt::Display for RestoreTier {
     }
 }
 
-/// HTTP header: cache_control
+/// HTTP header `Cache-Control`.
+///
+/// HTTP 头 `Cache-Control`。
 #[derive(Debug, Clone)]
 pub enum CacheControl {
+    /// Do not use caches without revalidation.
+    ///
+    /// 不使用缓存或需重新验证。
     NoCache,
+    /// Do not store in caches.
+    ///
+    /// 禁止缓存存储。
     NoStore,
+    /// Public cache.
+    ///
+    /// 公共缓存。
     Public,
+    /// Private cache.
+    ///
+    /// 私有缓存。
     Private,
+    /// Maximum cache age (seconds).
+    ///
+    /// 最大缓存时长（秒）。
     MaxAge(u32),
 }
 impl fmt::Display for CacheControl {
@@ -259,11 +249,22 @@ impl fmt::Display for CacheControl {
     }
 }
 
-/// HTTP header: content-disposition
+/// HTTP header `Content-Disposition`.
+///
+/// HTTP 头 `Content-Disposition`。
 #[derive(Debug, Clone)]
 pub enum ContentDisposition {
+    /// Display inline.
+    ///
+    /// 内联显示。
     Inline,
+    /// Display as attachment.
+    ///
+    /// 作为附件下载。
     Attachment,
+    /// Display as attachment with a new filename.
+    ///
+    /// 作为附件下载并指定新文件名。
     AttachmentWithNewName(String),
 }
 impl fmt::Display for ContentDisposition {
@@ -280,18 +281,26 @@ impl fmt::Display for ContentDisposition {
     }
 }
 
-/// Owner information
+/// Owner information.
+///
+/// 所有者信息。
 #[derive(Debug, Deserialize)]
 pub struct Owner {
-    /// User ID
+    /// User ID.
+    ///
+    /// 用户 ID。
     #[serde(rename = "ID")]
     pub id: u64,
-    /// User name
+    /// User name.
+    ///
+    /// 用户名。
     #[serde(rename = "DisplayName")]
     pub display_name: String,
 }
 
 /// Result returned by `GetBucketAcl`, containing the owner and ACL.
+///
+/// `GetBucketAcl` 返回结果，包含所有者与 ACL。
 #[derive(Debug)]
 pub struct BucketAcl {
     pub owner: Owner,
@@ -305,6 +314,7 @@ mod tests {
     #[test]
     fn test_url_encode_and_invalid_metadata_key() {
         assert_eq!(url_encode("a b"), "a%20b");
+        assert_eq!(url_encode("a.b"), "a.b");
         assert!(!invalid_metadata_key("abc-123"));
         assert!(invalid_metadata_key("abc_123"));
     }

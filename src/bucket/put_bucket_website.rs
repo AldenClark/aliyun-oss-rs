@@ -12,6 +12,10 @@ use super::{ErrorDocument, IndexDocument, WebsiteConfiguration};
 /// Configure bucket static website hosting.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/putbucketwebsite) for details.
+///
+/// 配置 Bucket 静态网站托管。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/putbucketwebsite)。
 pub struct PutBucketWebsite {
     req: OssRequest,
     config: WebsiteConfiguration,
@@ -27,29 +31,37 @@ impl PutBucketWebsite {
         }
     }
 
-    /// Set the index document suffix (for example, `index.html`).
-    pub fn set_index_document(mut self, suffix: impl ToString) -> Self {
+    /// Set the index document suffix (e.g., `index.html`).
+    ///
+    /// 设置索引文档后缀（如 `index.html`）。
+    pub fn set_index_document(mut self, suffix: impl Into<String>) -> Self {
         self.config.index_document = Some(IndexDocument {
-            suffix: suffix.to_string(),
+            suffix: suffix.into(),
         });
         self
     }
 
-    /// Set the error document key (for example, `error.html`).
-    pub fn set_error_document(mut self, key: impl ToString) -> Self {
+    /// Set the error document key (e.g., `error.html`).
+    ///
+    /// 设置错误文档 Key（如 `error.html`）。
+    pub fn set_error_document(mut self, key: impl Into<String>) -> Self {
         self.config.error_document = Some(ErrorDocument {
-            key: key.to_string(),
+            key: key.into(),
         });
         self
     }
 
-    /// Replace the raw configuration object.
+    /// Replace the entire configuration object.
+    ///
+    /// 替换完整配置对象。
     pub fn set_configuration(mut self, config: WebsiteConfiguration) -> Self {
         self.config = config;
         self
     }
 
     /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(mut self) -> Result<(), Error> {
         let body = serde_xml_rs::to_string(&self.config).map_err(|_| Error::InvalidCharacter)?;
         self.req.set_body(Full::new(Bytes::from(body)));

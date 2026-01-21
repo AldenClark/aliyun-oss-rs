@@ -21,9 +21,13 @@ struct AccessControlList {
     grant: Acl,
 }
 
-/// Retrieve the bucket access control
+/// Retrieve bucket ACL.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31964.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31964.html) for details.
+///
+/// 获取 Bucket ACL。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31964.html)。
 pub struct GetBucketAcl {
     req: OssRequest,
 }
@@ -33,7 +37,9 @@ impl GetBucketAcl {
         req.insert_query("acl", "");
         GetBucketAcl { req }
     }
-    /// Send the request
+    /// Send the request and return bucket ACL info.
+    ///
+    /// 发送请求并返回 Bucket ACL 信息。
     pub async fn send(self) -> Result<BucketAcl, Error> {
         let response = self.req.send_to_oss()?.await?;
         let status_code = response.status();

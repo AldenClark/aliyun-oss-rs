@@ -8,23 +8,37 @@ use http::Method;
 use serde_derive::Deserialize;
 
 // Returned content
-/// Object meta information
+/// Object metadata returned by `GetObjectMeta`.
+///
+/// `GetObjectMeta` 返回的对象元数据。
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ObjectMeta {
-    /// File size in bytes
+    /// Content length in bytes.
+    ///
+    /// 内容长度（字节）。
     pub content_length: String,
-    /// Identifies the file content
+    /// Entity tag of the object.
+    ///
+    /// 对象的 ETag。
     pub e_tag: String,
-    /// Last access time
+    /// Last access time, if available.
+    ///
+    /// 最近访问时间（如果有）。
     pub last_access_time: Option<String>,
-    /// Last modified time
+    /// Last modified time.
+    ///
+    /// 最近修改时间。
     pub last_modified: String,
 }
 
-/// Retrieve the object's meta information
+/// Retrieve object metadata.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31985.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31985.html) for details.
+///
+/// 获取对象元数据。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31985.html)。
 pub struct GetObjectMeta {
     req: OssRequest,
 }
@@ -34,8 +48,9 @@ impl GetObjectMeta {
         req.insert_query("objectMeta", "");
         GetObjectMeta { req }
     }
-    /// Send the request
+    /// Send the request and return metadata.
     ///
+    /// 发送请求并返回元数据。
     pub async fn send(self) -> Result<ObjectMeta, Error> {
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

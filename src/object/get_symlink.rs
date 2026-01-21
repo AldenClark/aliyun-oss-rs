@@ -6,9 +6,13 @@ use crate::{
 use http::Method;
 use percent_encoding::percent_decode;
 
-/// Get the symlink
+/// Get the symlink target of an object.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/45146.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/45146.html) for details.
+///
+/// 获取对象的符号链接目标。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/45146.html)。
 pub struct GetSymlink {
     req: OssRequest,
 }
@@ -18,8 +22,9 @@ impl GetSymlink {
         req.insert_query("symlink", "");
         GetSymlink { req }
     }
-    /// Send the request
+    /// Send the request and return the symlink target.
     ///
+    /// 发送请求并返回符号链接目标。
     pub async fn send(self) -> Result<String, Error> {
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

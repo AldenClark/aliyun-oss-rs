@@ -7,21 +7,18 @@ use crate::{
 use bytes::Bytes;
 use http::Method;
 use http_body_util::Full;
-use serde_derive::Serialize;
-use serde_xml_rs::to_string;
 
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "PascalCase")]
-struct CreateBucketConfiguration {
-    storage_class: Option<StorageClass>,
-    data_redundancy_type: Option<DataRedundancyType>,
-}
-
-/// Call the PutBucket interface to create a bucket
+/// Create a bucket with PutBucket.
 ///
-/// An Alibaba Cloud account can create up to 100 buckets in a single region
+/// An Alibaba Cloud account can create up to 100 buckets in a single region.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31959.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31959.html) for details.
+///
+/// 调用 PutBucket 创建 Bucket。
+///
+/// 单个账号在同一地域最多可创建 100 个 Bucket。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31959.html)。
 pub struct PutBucket {
     req: OssRequest,
     storage_class: Option<StorageClass>,
@@ -35,59 +32,63 @@ impl PutBucket {
             data_redundancy_type: None,
         }
     }
-    /// Set the bucket access permissions
+    /// Set bucket ACL.
+    ///
+    /// 设置 Bucket ACL。
     pub fn set_acl(mut self, acl: Acl) -> Self {
-        self.req.insert_header("x-oss-acl", acl);
+        self.req.insert_header("x-oss-acl", acl.to_string());
         self
     }
-    /// Specify the resource group ID
+    /// Specify the resource group ID.
     ///
-    /// If this header is included with a resource group ID, the created bucket belongs to that group. When the ID is rg-default-id, the bucket belongs to the default group.
+    /// If provided, the bucket is created in that group; `rg-default-id` means the default group.
     ///
-    /// If the header is omitted, the bucket belongs to the default resource group.
-    pub fn set_group_id(mut self, group_id: impl ToString) -> Self {
-        self.req.insert_header("x-oss-resource-group-id", group_id);
+    /// If omitted, the bucket is created in the default resource group.
+    ///
+    /// 指定资源组 ID。
+    ///
+    /// 若提供，将创建在该资源组；`rg-default-id` 表示默认资源组。
+    ///
+    /// 省略则创建在默认资源组。
+    pub fn set_group_id(mut self, group_id: impl Into<String>) -> Self {
+        self.req
+            .insert_header("x-oss-resource-group-id", group_id.into());
         self
     }
-    /// Set the bucket storage class
+    /// Set bucket storage class.
+    ///
+    /// `Archive` cannot be combined with `DataRedundancyType::ZRS`.
+    ///
+    /// 设置 Bucket 存储类型。
+    ///
+    /// `Archive` 不支持与 `DataRedundancyType::ZRS` 组合。
     pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
-        let body_str = format!(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CreateBucketConfiguration>{}{}</CreateBucketConfiguration>",
-            storage_class.to_string(),
-            self.data_redundancy_type.map_or(String::new(), |v| format!(
-                "<DataRedundancyType>{}</DataRedundancyType>",
-                v.to_string()
-            ))
-        );
         self.storage_class = Some(storage_class);
+        self.data_redundancy_type =
+            normalize_redundancy(self.storage_class, self.data_redundancy_type);
+        let body_str = build_create_bucket_body(self.storage_class, self.data_redundancy_type);
         self.req.set_body(Full::new(Bytes::from(body_str)));
         self
     }
-    /// Set the bucket data redundancy type
+    /// Set bucket data redundancy type.
+    ///
+    /// `DataRedundancyType::ZRS` is not supported for `Archive` storage class.
+    ///
+    /// 设置 Bucket 冗余类型。
+    ///
+    /// `Archive` 不支持 `DataRedundancyType::ZRS`。
     pub fn set_redundancy_type(mut self, redundancy_type: DataRedundancyType) -> Self {
-        let body_str = format!(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CreateBucketConfiguration>{}{}</CreateBucketConfiguration>",
-            self.storage_class
-                .map(|v| format!("<StorageClass>{}</StorageClass>", v.to_string()))
-                .unwrap_or_else(|| String::new()),
-            redundancy_type.to_string()
-        );
-        self.req.set_body(Full::new(Bytes::from(body_str)));
         self.data_redundancy_type = Some(redundancy_type);
+        self.data_redundancy_type =
+            normalize_redundancy(self.storage_class, self.data_redundancy_type);
+        let body_str = build_create_bucket_body(self.storage_class, self.data_redundancy_type);
+        self.req.set_body(Full::new(Bytes::from(body_str)));
         self
     }
-    /// Send the request
+    /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(self) -> Result<(), Error> {
-        let mut body = String::new();
-        if self.data_redundancy_type.is_some() || self.storage_class.is_some() {
-            let bucket_config = CreateBucketConfiguration {
-                storage_class: self.storage_class,
-                data_redundancy_type: self.data_redundancy_type,
-            };
-            if let Ok(body_str) = to_string(&bucket_config) {
-                body.push_str(&body_str)
-            };
-        }
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;
         // Parse the response
@@ -96,5 +97,54 @@ impl PutBucket {
             code if code.is_success() => Ok(()),
             _ => Err(normal_error(response).await),
         }
+    }
+}
+
+fn normalize_redundancy(
+    storage_class: Option<StorageClass>,
+    redundancy: Option<DataRedundancyType>,
+) -> Option<DataRedundancyType> {
+    if storage_class == Some(StorageClass::Archive) && redundancy == Some(DataRedundancyType::ZRS) {
+        None
+    } else {
+        redundancy
+    }
+}
+
+fn build_create_bucket_body(
+    storage_class: Option<StorageClass>,
+    redundancy: Option<DataRedundancyType>,
+) -> String {
+    let mut body = String::with_capacity(192);
+    body.push_str("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+    body.push_str("<CreateBucketConfiguration>");
+    if let Some(value) = storage_class {
+        body.push_str("<StorageClass>");
+        body.push_str(storage_class_value(value));
+        body.push_str("</StorageClass>");
+    }
+    if let Some(value) = redundancy {
+        body.push_str("<DataRedundancyType>");
+        body.push_str(redundancy_value(value));
+        body.push_str("</DataRedundancyType>");
+    }
+    body.push_str("</CreateBucketConfiguration>");
+    body
+}
+
+fn storage_class_value(value: StorageClass) -> &'static str {
+    match value {
+        StorageClass::Standard => "Standard",
+        StorageClass::IA => "IA",
+        StorageClass::Archive => "Archive",
+        StorageClass::ColdArchive => "ColdArchive",
+        StorageClass::DeepColdArchive => "DeepColdArchive",
+    }
+}
+
+fn redundancy_value(value: DataRedundancyType) -> &'static str {
+    match value {
+        DataRedundancyType::LRS => "LRS",
+        DataRedundancyType::ZRS => "ZRS",
     }
 }

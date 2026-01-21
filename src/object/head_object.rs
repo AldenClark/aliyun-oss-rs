@@ -9,9 +9,13 @@ use http::Method;
 use std::collections::HashMap;
 use time::OffsetDateTime;
 
-/// Retrieve the object's metadata
+/// Retrieve object metadata via HEAD.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31984.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31984.html) for details.
+///
+/// 通过 HEAD 获取对象元数据。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31984.html)。
 pub struct HeadObject {
     req: OssRequest,
 }
@@ -21,35 +25,43 @@ impl HeadObject {
             req: OssRequest::new(oss, Method::HEAD),
         }
     }
-    /// If the provided time is earlier than the actual modification time, the request succeeds
+    /// Succeed only if the object is modified after the given time.
     ///
+    /// 仅当对象在指定时间之后被修改时才成功。
     pub fn set_if_modified_since(mut self, if_modified_since: OffsetDateTime) -> Self {
         self.req
             .insert_header("If-Modified-Since", format_gmt(if_modified_since));
         self
     }
-    /// Require the specified time to be equal to or later than the object's last modification time
+    /// Succeed only if the object is not modified after the given time.
     ///
+    /// 仅当对象在指定时间之后未被修改时才成功。
     pub fn set_if_unmodified_since(mut self, if_unmodified_since: OffsetDateTime) -> Self {
         self.req
             .insert_header("If-Unmodified-Since", format_gmt(if_unmodified_since));
         self
     }
-    /// Require the object's ETag to match the provided ETag
+    /// Succeed only if the object ETag matches the given value.
     ///
-    /// The ETag verifies whether the data has changed and can be used to check data integrity
-    pub fn set_if_match(mut self, if_match: impl ToString) -> Self {
-        self.req.insert_header("If-Match", if_match);
+    /// ETag helps detect data changes and verify integrity.
+    ///
+    /// 仅当对象 ETag 与给定值一致时才成功。
+    ///
+    /// ETag 可用于检测数据变更和校验完整性。
+    pub fn set_if_match(mut self, if_match: impl Into<String>) -> Self {
+        self.req.insert_header("If-Match", if_match.into());
         self
     }
-    /// Require the object's ETag to differ from the provided ETag
+    /// Succeed only if the object ETag differs from the given value.
     ///
-    pub fn set_if_none_match(mut self, if_none_match: impl ToString) -> Self {
-        self.req.insert_header("If-None-Match", if_none_match);
+    /// 仅当对象 ETag 与给定值不一致时才成功。
+    pub fn set_if_none_match(mut self, if_none_match: impl Into<String>) -> Self {
+        self.req.insert_header("If-None-Match", if_none_match.into());
         self
     }
-    /// Send the request
+    /// Send the request and return filtered response headers.
     ///
+    /// 发送请求并返回过滤后的响应头。
     pub async fn send(self) -> Result<HashMap<String, String>, Error> {
         // Build the HTTP request
         let mut response = self.req.send_to_oss()?.await?;

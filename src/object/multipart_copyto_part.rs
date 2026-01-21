@@ -6,9 +6,13 @@ use crate::{
 use http::Method;
 use time::OffsetDateTime;
 
-/// Initialize a multipart upload part
+/// Copy source object content to a multipart upload part.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31994.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31994.html) for details.
+///
+/// 将源对象内容复制到分片上传的某个分片。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31994.html)。
 pub struct CopyToPart {
     req: OssRequest,
 }
@@ -16,18 +20,22 @@ impl CopyToPart {
     pub(super) fn new(
         oss: Oss,
         part_number: u32,
-        upload_id: impl ToString,
-        copy_source: impl ToString,
+        upload_id: impl Into<String>,
+        copy_source: impl Into<String>,
     ) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
-        req.insert_query("partNumber", part_number);
-        req.insert_query("uploadId", upload_id);
-        req.insert_header("x-oss-copy-source", copy_source);
+        req.insert_query("partNumber", part_number.to_string());
+        req.insert_query("uploadId", upload_id.into());
+        req.insert_header("x-oss-copy-source", copy_source.into());
         CopyToPart { req }
     }
-    /// Set the source file copy range
+    /// Set the source byte range to copy.
     ///
-    /// By default, the entire file is copied; byte indexing starts at 0
+    /// By default, the entire object is copied; byte indexing starts at 0.
+    ///
+    /// 设置复制的源对象字节范围。
+    ///
+    /// 默认复制整个对象，字节从 0 开始。
     pub fn set_source_range(mut self, start: usize, end: Option<usize>) -> Self {
         self.req.insert_header(
             "x-oss-copy-source-range",
@@ -39,8 +47,9 @@ impl CopyToPart {
         );
         self
     }
-    /// If the specified time is earlier than the file's actual modification time, the copy proceeds.
+    /// Copy only if the source is modified after the given time.
     ///
+    /// 仅当源对象在指定时间之后被修改时才复制。
     pub fn set_if_modified_since(mut self, if_modified_since: OffsetDateTime) -> Self {
         self.req.insert_header(
             "x-oss-copy-source-if-modified-since",
@@ -48,8 +57,9 @@ impl CopyToPart {
         );
         self
     }
-    /// If the specified time is equal to or later than the file's actual modification time, the copy proceeds.
+    /// Copy only if the source is not modified after the given time.
     ///
+    /// 仅当源对象在指定时间之后未被修改时才复制。
     pub fn set_if_unmodified_since(mut self, if_unmodified_since: OffsetDateTime) -> Self {
         self.req.insert_header(
             "x-oss-copy-source-if-unmodified-since",
@@ -57,25 +67,33 @@ impl CopyToPart {
         );
         self
     }
-    /// Copy the source file only if its ETag matches the value you provide.
+    /// Copy only if the source ETag matches the given value.
     ///
-    /// The ETag is used to verify whether the data has changed; you can use it to check data integrity.
-    pub fn set_if_match(mut self, if_match: impl ToString) -> Self {
+    /// ETag helps detect data changes and verify integrity.
+    ///
+    /// 仅当源对象 ETag 与给定值一致时才复制。
+    ///
+    /// ETag 可用于检测数据变更和校验完整性。
+    pub fn set_if_match(mut self, if_match: impl Into<String>) -> Self {
         self.req
-            .insert_header("x-oss-copy-source-if-match", if_match);
+            .insert_header("x-oss-copy-source-if-match", if_match.into());
         self
     }
-    /// Copy the source file only if its ETag does not match the value you provide.
+    /// Copy only if the source ETag does not match the given value.
     ///
-    /// The ETag is used to verify whether the data has changed; you can use it to check data integrity.
-    pub fn set_if_none_match(mut self, if_none_match: impl ToString) -> Self {
+    /// ETag helps detect data changes and verify integrity.
+    ///
+    /// 仅当源对象 ETag 与给定值不一致时才复制。
+    ///
+    /// ETag 可用于检测数据变更和校验完整性。
+    pub fn set_if_none_match(mut self, if_none_match: impl Into<String>) -> Self {
         self.req
-            .insert_header("x-oss-copy-source-if-none-match", if_none_match);
+            .insert_header("x-oss-copy-source-if-none-match", if_none_match.into());
         self
     }
-    /// Copy object content to a part
+    /// Send the copy request and return the ETag.
     ///
-    /// Returns the ETag
+    /// 发送复制请求并返回 ETag。
     pub async fn send(self) -> Result<String, Error> {
         // Upload file
         let response = self.req.send_to_oss()?.await?;

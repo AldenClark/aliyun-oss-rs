@@ -14,6 +14,10 @@ use std::pin::Pin;
 /// Execute an SQL-like query against an object stored in OSS.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/selectobject) for details.
+///
+/// 对 OSS 中的对象执行类 SQL 查询。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/selectobject)。
 pub struct SelectObject {
     req: OssRequest,
     request_xml: Option<String>,
@@ -32,13 +36,19 @@ impl SelectObject {
 
     /// Provide the select request XML document.
     ///
-    /// Refer to the official documentation for the schema of the `<SelectRequest>` payload.
-    pub fn set_request(mut self, xml: impl ToString) -> Self {
-        self.request_xml = Some(xml.to_string());
+    /// Refer to the official documentation for the `<SelectRequest>` schema.
+    ///
+    /// 提供查询请求 XML 文档。
+    ///
+    /// `<SelectRequest>` 结构请参考官方文档。
+    pub fn set_request(mut self, xml: impl Into<String>) -> Self {
+        self.request_xml = Some(xml.into());
         self
     }
 
-    /// Enable raw output mode (sets the `x-oss-select-output-raw` header).
+    /// Enable raw output mode (sets `x-oss-select-output-raw`).
+    ///
+    /// 启用原始输出模式（设置 `x-oss-select-output-raw`）。
     pub fn enable_output_raw(mut self, enable: bool) -> Self {
         if enable {
             self.req.insert_header("x-oss-select-output-raw", "true");
@@ -47,12 +57,16 @@ impl SelectObject {
     }
 
     /// Send the request and collect the response into memory.
+    ///
+    /// 发送请求并将响应聚合到内存。
     pub async fn send(self) -> Result<Bytes, Error> {
         let response = self.send_internal().await?;
         Ok(body_to_bytes(response.into_body()).await?)
     }
 
-    /// Send the request and return the response stream for manual consumption.
+    /// Send the request and return a response stream.
+    ///
+    /// 发送请求并返回响应流。
     pub async fn send_to_stream(
         self,
     ) -> Result<Pin<Box<dyn Stream<Item = Result<bytes::Bytes, Error>> + Send>>, Error> {

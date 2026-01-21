@@ -5,13 +5,21 @@ use crate::{
 };
 use http::Method;
 
-/// Delete the specified object
+/// Delete an object.
 ///
-/// When deleting, OSS does not check whether the object exists; a valid request always succeeds
+/// OSS does not check object existence; a valid request usually succeeds.
 ///
-/// If versioning is enabled, the response is meaningful. Please refer to the documentation for delete markers and version IDs
+/// If versioning is enabled, response headers carry delete marker and version ID info.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31982.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31982.html) for details.
+///
+/// 删除对象。
+///
+/// OSS 不检查对象是否存在，合法请求通常会成功。
+///
+/// 若开启版本控制，响应头会包含删除标记与版本 ID 信息。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31982.html)。
 pub struct DelObject {
     req: OssRequest,
 }
@@ -21,12 +29,17 @@ impl DelObject {
             req: OssRequest::new(oss, Method::DELETE),
         }
     }
-    /// Send the request
+    /// Send the delete request.
     ///
-    /// The return value is meaningful only when versioning is enabled
+    /// Response headers are meaningful only when versioning is enabled.
     ///
-    /// - Return value 0: x-oss-delete-marker flag
-    /// - Return value 1: Version ID. If no version ID is specified when deleting, this is the version ID of the new delete marker; otherwise, it is the specified version ID
+    /// `x-oss-delete-marker` indicates delete marker; `x-oss-version-id` is the deleted version ID.
+    ///
+    /// 发送删除请求。
+    ///
+    /// 仅在开启版本控制时响应头才有意义。
+    ///
+    /// `x-oss-delete-marker` 表示删除标记；`x-oss-version-id` 表示删除的版本 ID。
     pub async fn send(self) -> Result<(), Error> {
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

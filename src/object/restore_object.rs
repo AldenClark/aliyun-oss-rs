@@ -8,9 +8,13 @@ use bytes::Bytes;
 use http::Method;
 use http_body_util::Full;
 
-/// Restore an archived object
+/// Restore an archived object.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/52930.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/52930.html) for details.
+///
+/// 解冻归档对象。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/52930.html)。
 pub struct RestoreObject {
     req: OssRequest,
     days: Option<u32>,
@@ -26,20 +30,23 @@ impl RestoreObject {
             tier: None,
         }
     }
-    /// Set the number of days to keep the restored copy
+    /// Set the number of days to keep the restored copy.
     ///
+    /// 设置解冻副本保留天数。
     pub fn set_days(mut self, days: u32) -> Self {
         self.days = Some(days);
         self
     }
-    /// Set the restore priority
+    /// Set the restore priority.
     ///
+    /// 设置解冻优先级。
     pub fn set_tier(mut self, tier: RestoreTier) -> Self {
         self.tier = Some(tier);
         self
     }
-    /// Send the request
+    /// Send the request.
     ///
+    /// 发送请求。
     pub async fn send(mut self) -> Result<(), Error> {
         // Build the body
         let days_str = self

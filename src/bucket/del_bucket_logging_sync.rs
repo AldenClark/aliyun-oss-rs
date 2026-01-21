@@ -4,7 +4,9 @@ use crate::{
 };
 use http::Method;
 
-/// Delete the bucket logging configuration (synchronous)
+/// Delete the bucket logging configuration (sync).
+///
+/// 删除 Bucket 日志配置（同步）。
 pub struct DelBucketLoggingSync {
     req: OssRequest,
 }
@@ -14,7 +16,9 @@ impl DelBucketLoggingSync {
         req.insert_query("logging", "");
         DelBucketLoggingSync { req }
     }
-    /// Send the request
+    /// Send the request.
+    ///
+    /// 发送请求。
     pub fn send(self) -> Result<(), Error> {
         let response = self.req.send_to_oss()?;
         let status = response.status();

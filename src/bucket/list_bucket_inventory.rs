@@ -6,9 +6,13 @@ use crate::{
 };
 use http::Method;
 
-/// List all inventory task configurations defined on the bucket.
+/// List all inventory task configurations for a bucket.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/listbucketinventory) for details.
+///
+/// 列举 Bucket 的清单任务配置。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/listbucketinventory)。
 pub struct ListBucketInventory {
     req: OssRequest,
 }
@@ -22,6 +26,8 @@ impl ListBucketInventory {
     }
 
     /// Send the request and return the XML response.
+    ///
+    /// 发送请求并返回 XML 响应。
     pub async fn send(self) -> Result<String, Error> {
         let response = self.req.send_to_oss()?.await?;
         match response.status() {

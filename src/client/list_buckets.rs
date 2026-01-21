@@ -9,21 +9,35 @@ use http::Method;
 use serde_derive::Deserialize;
 
 // Return value
-/// Basic bucket information
+/// Basic bucket information.
+///
+/// Bucket 基本信息。
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct BucketBase {
-    /// Bucket name
+    /// Bucket name.
+    ///
+    /// Bucket 名称。
     pub name: String,
-    /// Region
+    /// Region.
+    ///
+    /// 地域。
     pub region: String,
-    /// Region identifier in OSS
+    /// Region identifier in OSS.
+    ///
+    /// OSS 地域标识。
     pub location: String,
-    /// Public endpoint
+    /// Public endpoint.
+    ///
+    /// 外网 Endpoint。
     pub extranet_endpoint: String,
-    /// Internal endpoint
+    /// Internal endpoint.
+    ///
+    /// 内网 Endpoint。
     pub intranet_endpoint: String,
-    /// Storage class
+    /// Storage class.
+    ///
+    /// 存储类型。
     pub storage_class: StorageClass,
 }
 #[derive(Debug, Deserialize)]
@@ -33,35 +47,57 @@ pub(crate) struct Buckets {
 }
 
 // Result set of bucket list query
+/// Internal bucket list payload.
+///
+/// 内部 Bucket 列表载荷。
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub(crate) struct ListAllMyBucketsResult {
-    /// If a single query does not list all buckets, next_marker can be used for the next query
+    /// Marker for the next query when results are truncated.
+    ///
+    /// 结果被截断时的下一次查询 marker。
     pub next_marker: Option<String>,
-    /// Bucket list
+    /// Bucket list.
+    ///
+    /// Bucket 列表。
     pub buckets: Buckets,
 }
 
-/// Result set of bucket list query
+/// Result set of bucket list query.
+///
+/// Bucket 列表查询结果。
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ListAllMyBuckets {
-    /// If a single query does not list all buckets, next_marker can be used for the next query
+    /// Marker for the next query when results are truncated.
+    ///
+    /// 结果被截断时的下一次查询 marker。
     pub next_marker: Option<String>,
-    /// Bucket list
+    /// Bucket list.
+    ///
+    /// Bucket 列表。
     pub buckets: Option<Vec<BucketBase>>,
 }
 
-/// List buckets
+/// List buckets.
 ///
-/// Filters can be set via the `set_` methods. See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31957.html) for details
+/// Filters can be set via the `set_` methods. See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31957.html) for details.
 ///
 /// ```ignore
-/// let client = OssClient::new("AccessKey ID","AccessKey Secret","oss-cn-beijing.aliyuncs.com");
+/// let client = OssClient::new("AccessKey ID", "AccessKey Secret", "cn-beijing");
 /// let buckets = client.list_buckets().set_prefix("rust").send().await;
 /// println!("{:#?}", buckets);
 /// ```
 ///
+/// 列举 Bucket。
+///
+/// 可通过 `set_` 方法设置过滤条件；详情见 [阿里云文档](https://help.aliyun.com/document_detail/31957.html)。
+///
+/// ```ignore
+/// let client = OssClient::new("AccessKey ID", "AccessKey Secret", "cn-beijing");
+/// let buckets = client.list_buckets().set_prefix("rust").send().await;
+/// println!("{:#?}", buckets);
+/// ```
 pub struct ListBuckets {
     req: OssRequest,
 }
@@ -73,39 +109,58 @@ impl ListBuckets {
         }
     }
 
-    /// Limit the returned bucket names to those starting with prefix. Without setting, no prefix filtering is applied.
+    /// Limit bucket names to those starting with the given prefix.
     ///
     /// Prefix requirements:
     /// - Cannot be empty and must not exceed 63 bytes
     /// - May contain only lowercase letters, numbers, and hyphens, and cannot start with a hyphen
     ///
-    pub fn set_prefix(mut self, prefix: impl ToString) -> Self {
-        self.req.insert_query("prefix", prefix);
-        self
-    }
-    /// Start returning results from the first key alphabetically after marker. If not set, return from the beginning.
-    pub fn set_marker(mut self, marker: impl ToString) -> Self {
-        self.req.insert_query("marker", marker);
-        self
-    }
-    /// Limit the maximum number of buckets returned. Range: 1-1000, default: 100
-    pub fn set_max_keys(mut self, max_keys: u32) -> Self {
-        self.req.insert_query("max-keys", max_keys);
-        self
-    }
-    /// Specify the resource group ID
-    pub fn set_group_id(mut self, group_id: impl ToString) -> Self {
-        self.req.insert_header("x-oss-resource-group-id", group_id);
-        self
-    }
-    /// Specify the endpoint from which to initiate the query; this does not limit the region of buckets
+    /// 仅返回以指定前缀开头的 Bucket。
     ///
-    /// Defaults to oss.aliyuncs.com. If inaccessible, set an endpoint you can reach
-    pub fn set_endpoint(mut self, endpoint: impl ToString) -> Self {
-        self.req.set_endpoint(endpoint);
+    /// Prefix requirements:
+    /// - Cannot be empty and must not exceed 63 bytes
+    /// - May contain only lowercase letters, numbers, and hyphens, and cannot start with a hyphen
+    pub fn set_prefix(mut self, prefix: impl Into<String>) -> Self {
+        self.req.insert_query("prefix", prefix.into());
         self
     }
-    /// Send the request
+    /// Start returning results after the given marker.
+    ///
+    /// 从指定 marker 之后开始返回结果。
+    pub fn set_marker(mut self, marker: impl Into<String>) -> Self {
+        self.req.insert_query("marker", marker.into());
+        self
+    }
+    /// Set maximum number of buckets to return (1-1000, default 100).
+    ///
+    /// 设置返回 Bucket 的最大数量（1-1000，默认 100）。
+    pub fn set_max_keys(mut self, max_keys: u32) -> Self {
+        self.req
+            .insert_query("max-keys", max_keys.to_string());
+        self
+    }
+    /// Specify the resource group ID.
+    ///
+    /// 指定资源组 ID。
+    pub fn set_group_id(mut self, group_id: impl Into<String>) -> Self {
+        self.req
+            .insert_header("x-oss-resource-group-id", group_id.into());
+        self
+    }
+    /// Set the endpoint used for this query; it does not limit the bucket regions.
+    ///
+    /// Defaults to oss.aliyuncs.com. If unreachable, use an accessible endpoint.
+    ///
+    /// 设置本次查询的 Endpoint；不会限制 Bucket 所在地域。
+    ///
+    /// 默认 oss.aliyuncs.com，不可达时请设置可访问的 Endpoint。
+    pub fn set_endpoint(mut self, endpoint: impl Into<String>) -> Self {
+        self.req.set_endpoint(endpoint.into());
+        self
+    }
+    /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(self) -> Result<ListAllMyBuckets, Error> {
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

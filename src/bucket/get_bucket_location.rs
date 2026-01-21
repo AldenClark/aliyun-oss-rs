@@ -14,9 +14,13 @@ struct LocationConstraint {
     pub location: String,
 }
 
-/// Retrieve bucket location information
+/// Retrieve bucket location.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/getbucketlocation) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/getbucketlocation) for details.
+///
+/// 获取 Bucket 所在地域。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/getbucketlocation)。
 pub struct GetBucketLocation {
     req: OssRequest,
 }
@@ -26,7 +30,9 @@ impl GetBucketLocation {
         req.insert_query("location", "");
         GetBucketLocation { req }
     }
-    /// Send the request
+    /// Send the request and return the region identifier.
+    ///
+    /// 发送请求并返回地域标识。
     pub async fn send(self) -> Result<String, Error> {
         let response = self.req.send_to_oss()?.await?;
         let status_code = response.status();

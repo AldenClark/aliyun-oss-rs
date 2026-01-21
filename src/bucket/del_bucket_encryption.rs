@@ -8,6 +8,10 @@ use http::Method;
 /// Delete the bucket encryption configuration.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/deletebucketencryption) for details.
+///
+/// 删除 Bucket 加密配置。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/deletebucketencryption)。
 pub struct DelBucketEncryption {
     req: OssRequest,
 }
@@ -20,6 +24,8 @@ impl DelBucketEncryption {
     }
 
     /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(self) -> Result<(), Error> {
         let response = self.req.send_to_oss()?.await?;
         match response.status() {

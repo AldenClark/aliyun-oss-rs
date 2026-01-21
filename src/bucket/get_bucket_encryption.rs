@@ -11,6 +11,10 @@ use super::BucketEncryption;
 /// Retrieve the default server-side encryption configuration for the bucket.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/getbucketencryption) for details.
+///
+/// 获取 Bucket 的默认服务端加密配置。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/getbucketencryption)。
 pub struct GetBucketEncryption {
     req: OssRequest,
 }
@@ -23,6 +27,8 @@ impl GetBucketEncryption {
     }
 
     /// Send the request and return the parsed configuration.
+    ///
+    /// 发送请求并返回解析后的配置。
     pub async fn send(self) -> Result<BucketEncryption, Error> {
         let response = self.req.send_to_oss()?.await?;
         match response.status() {

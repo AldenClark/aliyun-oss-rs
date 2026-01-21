@@ -5,11 +5,17 @@ use crate::{
 };
 use http::Method;
 
-/// Delete a bucket
+/// Delete a bucket.
 ///
-/// To prevent accidental deletions, OSS does not allow deleting a non-empty bucket
+/// OSS does not allow deleting a non-empty bucket.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31973.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31973.html) for details.
+///
+/// 删除 Bucket。
+///
+/// OSS 不允许删除非空 Bucket。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31973.html)。
 pub struct DelBucket {
     req: OssRequest,
 }
@@ -20,6 +26,9 @@ impl DelBucket {
         }
     }
 
+    /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(self) -> Result<(), Error> {
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

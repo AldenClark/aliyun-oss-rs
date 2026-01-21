@@ -9,7 +9,9 @@ use http::Method;
 use serde_derive::Deserialize;
 
 // Returned content
-/// Object ACL information
+/// Object ACL information.
+///
+/// 对象 ACL 信息。
 #[derive(Debug, Deserialize)]
 struct AccessControlPolicy {
     #[serde(rename = "AccessControlList")]
@@ -22,9 +24,13 @@ struct AccessControlList {
     grant: Acl,
 }
 
-/// Retrieve the object's ACL
+/// Retrieve the object's ACL.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31987.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31987.html) for details.
+///
+/// 获取对象 ACL。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31987.html)。
 pub struct GetObjectAcl {
     req: OssRequest,
 }
@@ -34,8 +40,9 @@ impl GetObjectAcl {
         req.insert_query("acl", "");
         GetObjectAcl { req }
     }
-    /// Send the request
+    /// Send the request and return the ACL.
     ///
+    /// 发送请求并返回对象 ACL。
     pub async fn send(self) -> Result<Acl, Error> {
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

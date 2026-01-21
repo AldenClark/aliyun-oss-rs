@@ -8,6 +8,10 @@ use http::Method;
 /// Delete the static website configuration of a bucket.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/deletebucketwebsite) for details.
+///
+/// 删除 Bucket 的静态网站配置。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/deletebucketwebsite)。
 pub struct DelBucketWebsite {
     req: OssRequest,
 }
@@ -20,6 +24,8 @@ impl DelBucketWebsite {
     }
 
     /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(self) -> Result<(), Error> {
         let response = self.req.send_to_oss()?.await?;
         match response.status() {

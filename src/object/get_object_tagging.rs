@@ -21,17 +21,29 @@ pub(crate) struct TagSet {
 }
 
 #[derive(Debug, Deserialize)]
-/// Tag information
+/// Object tag key/value pair.
+///
+/// 对象标签键值对。
 pub struct Tag {
+    /// Tag key.
+    ///
+    /// 标签键。
     #[serde(rename = "Key")]
     pub key: String,
+    /// Tag value.
+    ///
+    /// 标签值。
     #[serde(rename = "Value")]
     pub value: String,
 }
 
-/// Retrieve tag information of an object
+/// Retrieve tag information of an object.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/114878.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/114878.html) for details.
+///
+/// 获取对象标签信息。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/114878.html)。
 pub struct GetObjectTagging {
     req: OssRequest,
 }
@@ -41,8 +53,9 @@ impl GetObjectTagging {
         req.insert_query("tagging", "");
         GetObjectTagging { req }
     }
-    /// Send the request
+    /// Send the request and return tags if any.
     ///
+    /// 发送请求并返回标签（如有）。
     pub async fn send(self) -> Result<Option<Vec<Tag>>, Error> {
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

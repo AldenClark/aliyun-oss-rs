@@ -12,6 +12,10 @@ use super::BucketEncryption;
 /// Configure default server-side encryption for the bucket.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/putbucketencryption) for details.
+///
+/// 配置 Bucket 默认服务端加密。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/putbucketencryption)。
 pub struct PutBucketEncryption {
     req: OssRequest,
     encryption: BucketEncryption,
@@ -27,25 +31,33 @@ impl PutBucketEncryption {
         }
     }
 
-    /// Set the encryption algorithm (for example, `AES256`, `KMS`).
-    pub fn set_algorithm(mut self, algorithm: impl ToString) -> Self {
-        self.encryption.rule.default_sse.sse_algorithm = algorithm.to_string();
+    /// Set the encryption algorithm (e.g., `AES256`, `KMS`).
+    ///
+    /// 设置加密算法（如 `AES256`、`KMS`）。
+    pub fn set_algorithm(mut self, algorithm: impl Into<String>) -> Self {
+        self.encryption.rule.default_sse.sse_algorithm = algorithm.into();
         self
     }
 
-    /// Set the KMS master key ID. Only valid when the algorithm is `KMS`.
-    pub fn set_kms_master_key_id(mut self, key_id: impl ToString) -> Self {
-        self.encryption.rule.default_sse.kms_master_key_id = Some(key_id.to_string());
+    /// Set the KMS master key ID (only valid when algorithm is `KMS`).
+    ///
+    /// 设置 KMS 主密钥 ID（仅在算法为 `KMS` 时生效）。
+    pub fn set_kms_master_key_id(mut self, key_id: impl Into<String>) -> Self {
+        self.encryption.rule.default_sse.kms_master_key_id = Some(key_id.into());
         self
     }
 
     /// Replace the entire encryption document.
+    ///
+    /// 替换整个加密配置文档。
     pub fn set_encryption(mut self, encryption: BucketEncryption) -> Self {
         self.encryption = encryption;
         self
     }
 
     /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(mut self) -> Result<(), Error> {
         let body =
             serde_xml_rs::to_string(&self.encryption).map_err(|_| Error::InvalidCharacter)?;

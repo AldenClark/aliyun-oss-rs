@@ -10,17 +10,23 @@ use http_body_util::Full;
 use md5::{Digest, Md5};
 use std::collections::HashSet;
 
-/// Delete multiple files
+/// Delete multiple objects.
 ///
-/// When deleting, OSS does not check whether the file exists; a valid request always succeeds
+/// OSS does not check object existence; a valid request usually succeeds.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31983.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31983.html) for details.
+///
+/// 批量删除对象。
+///
+/// OSS 不检查对象是否存在，合法请求通常会成功。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31983.html)。
 pub struct DelObjects {
     req: OssRequest,
     objects: HashSet<String>,
 }
 impl DelObjects {
-    pub(super) fn new(oss: Oss, files: Vec<impl ToString>) -> Self {
+    pub(super) fn new(oss: Oss, files: Vec<impl Into<String>>) -> Self {
         let mut req = OssRequest::new(oss, Method::POST);
         req.insert_query("delete", "");
         let len = files.len();
@@ -32,27 +38,29 @@ impl DelObjects {
         } else {
             let mut objects = HashSet::with_capacity(len);
             for object in files {
-                objects.insert(object.to_string());
+                objects.insert(object.into());
             }
             DelObjects { req, objects }
         }
     }
-    /// Add files to delete
+    /// Add objects to delete.
     ///
-    pub fn add_files(mut self, files: Vec<impl ToString>) -> Self {
+    /// 添加待删除对象。
+    pub fn add_files(mut self, files: Vec<impl Into<String>>) -> Self {
         let len = files.len();
         if len == 0 {
             self
         } else {
             self.objects.reserve(len);
             for object in files {
-                self.objects.insert(object.to_string());
+                self.objects.insert(object.into());
             }
             self
         }
     }
-    /// Send the request
+    /// Send the request.
     ///
+    /// 发送请求。
     pub async fn send(mut self) -> Result<(), Error> {
         // Generate body
         let body = format!(
@@ -73,7 +81,8 @@ impl DelObjects {
         // Insert body content
         self.req.set_body(Full::new(Bytes::from(body)));
         // Insert header content
-        self.req.insert_header("Content-Length", body_len);
+        self.req
+            .insert_header("Content-Length", body_len.to_string());
         self.req.insert_header("Content-MD5", body_md5);
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

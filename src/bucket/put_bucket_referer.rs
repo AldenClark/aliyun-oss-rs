@@ -12,6 +12,10 @@ use super::{RefererConfiguration, RefererList};
 /// Configure bucket hotlink protection (Referer whitelist).
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/putbucketreferer) for details.
+///
+/// 配置 Bucket 防盗链（Referer 白名单）。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/putbucketreferer)。
 pub struct PutBucketReferer {
     req: OssRequest,
     config: RefererConfiguration,
@@ -31,18 +35,24 @@ impl PutBucketReferer {
     }
 
     /// Set whether empty Referer headers are allowed.
+    ///
+    /// 设置是否允许空 Referer。
     pub fn allow_empty_referer(mut self, allow: bool) -> Self {
         self.config.allow_empty_referer = allow;
         self
     }
 
     /// Replace the referer whitelist.
-    pub fn set_whitelist(mut self, referers: Vec<impl ToString>) -> Self {
-        self.config.referer_list.items = referers.into_iter().map(|s| s.to_string()).collect();
+    ///
+    /// 替换 Referer 白名单。
+    pub fn set_whitelist(mut self, referers: Vec<impl Into<String>>) -> Self {
+        self.config.referer_list.items = referers.into_iter().map(Into::into).collect();
         self
     }
 
     /// Send the request.
+    ///
+    /// 发送请求。
     pub async fn send(mut self) -> Result<(), Error> {
         let body = serde_xml_rs::to_string(&self.config).map_err(|_| Error::InvalidCharacter)?;
         self.req.set_body(Full::new(Bytes::from(body)));

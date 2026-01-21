@@ -14,13 +14,21 @@ use std::collections::HashMap;
 use tokio::{fs::File, io::BufReader};
 use tokio_util::io::ReaderStream;
 
-/// Append to a file
+/// Append data to an appendable object.
 ///
-/// Only files of type Appendable can be appended; files uploaded via the put method cannot be appended
+/// Only appendable objects can be appended; objects uploaded via `PutObject` cannot be appended.
 ///
-/// The final size of the file after appending cannot exceed 5GB
+/// The final object size after appends cannot exceed 5GB.
 ///
-/// The logic and limitations of append operations are complex; please read the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31978.html)
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31978.html) for details and limitations.
+///
+/// 追加数据到可追加类型对象。
+///
+/// 仅可追加类型对象支持追加；使用 `PutObject` 上传的对象不可追加。
+///
+/// 追加后的对象最终大小不能超过 5GB。
+///
+/// 详细规则与限制请参阅 [阿里云文档](https://help.aliyun.com/document_detail/31978.html)。
 pub struct AppendObject {
     req: OssRequest,
     mime: Option<String>,
@@ -40,79 +48,123 @@ impl AppendObject {
             callback: None,
         }
     }
-    /// Set the starting position for the appended content
+    /// Set the starting position for the append content.
+    ///
+    /// 设置追加内容的起始位置。
     pub fn set_position(mut self, position: u32) -> Self {
-        self.req.insert_query("position", position);
-        self
-    }
-    /// Set the file's MIME type
-    ///
-    /// If no MIME type is set, the request will try to determine it from the content, local path, or remote path. If still unsuccessful, the default MIME type (application/octet-stream) is used
-    pub fn set_mime(mut self, mime: impl ToString) -> Self {
-        self.mime = Some(mime.to_string());
-        self
-    }
-    /// Set the file's access permissions
-    pub fn set_acl(mut self, acl: Acl) -> Self {
-        self.req.insert_header("x-oss-object-acl", acl);
-        self
-    }
-    /// Set the file's storage class
-    pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
-        self.req.insert_header("x-oss-storage-class", storage_class);
-        self
-    }
-    /// Cache behavior of the webpage when the file is downloaded
-    pub fn set_cache_control(mut self, cache_control: CacheControl) -> Self {
-        self.req.insert_header(header::CACHE_CONTROL, cache_control);
-        self
-    }
-    /// Set how the file is presented
-    pub fn set_content_disposition(mut self, content_disposition: ContentDisposition) -> Self {
         self.req
-            .insert_header(header::CONTENT_DISPOSITION, content_disposition);
+            .insert_query("position", position.to_string());
         self
     }
-    /// Set additional metadata
+    /// Set the object's MIME type.
     ///
-    /// Keys may only contain letters, numbers, and hyphens; metadata with other characters will be discarded
-    pub fn set_meta(mut self, key: impl ToString, value: impl ToString) -> Self {
-        let key = key.to_string();
+    /// If not set, the MIME type is inferred; fallback is `application/octet-stream`.
+    ///
+    /// 设置对象的 MIME 类型。
+    ///
+    /// 未设置时尝试推断，失败则使用 `application/octet-stream`。
+    pub fn set_mime(mut self, mime: impl Into<String>) -> Self {
+        self.mime = Some(mime.into());
+        self
+    }
+    /// Set object ACL.
+    ///
+    /// 设置对象 ACL。
+    pub fn set_acl(mut self, acl: Acl) -> Self {
+        self.req
+            .insert_header("x-oss-object-acl", acl.to_string());
+        self
+    }
+    /// Set object storage class.
+    ///
+    /// 设置对象存储类型。
+    pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
+        self.req.insert_header(
+            "x-oss-storage-class",
+            storage_class.to_string(),
+        );
+        self
+    }
+    /// Set cache-control behavior when the object is downloaded.
+    ///
+    /// 设置对象下载时的缓存策略。
+    pub fn set_cache_control(mut self, cache_control: CacheControl) -> Self {
+        self.req
+            .insert_header(header::CACHE_CONTROL.as_str(), cache_control.to_string());
+        self
+    }
+    /// Set content disposition for downloads.
+    ///
+    /// 设置下载时的内容呈现方式。
+    pub fn set_content_disposition(mut self, content_disposition: ContentDisposition) -> Self {
+        self.req.insert_header(
+            header::CONTENT_DISPOSITION.as_str(),
+            content_disposition.to_string(),
+        );
+        self
+    }
+    /// Set custom object metadata.
+    ///
+    /// Metadata keys may only contain letters, numbers, and hyphens.
+    ///
+    /// 设置对象自定义元数据。
+    ///
+    /// 元数据键仅允许字母、数字和连字符。
+    pub fn set_meta(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        let key = key.into();
         if !invalid_metadata_key(&key) {
             self.req
-                .insert_header(format!("x-oss-meta-{}", key.to_string()), value);
+                .insert_header(format!("x-oss-meta-{}", key), value.into());
         }
         self
     }
-    /// Set tag information
-    pub fn set_tagging(mut self, key: impl ToString, value: impl ToString) -> Self {
-        self.tags.insert(key.to_string(), value.to_string());
+    /// Add a tag key/value pair.
+    ///
+    /// 追加对象标签键值对。
+    pub fn set_tagging(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.tags.insert(key.into(), value.into());
         self
     }
-    /// Set a callback for upload progress; this only applies to `send_file()`
+    /// Set an upload progress callback, only effective for `send_file()`.
     /// ```
     /// let callback = Box::new(|uploaded_size: u64, total_size: u64| {
-    ///     let percentage = if total_size == 0 {
-    ///         100.0
-    ///     } else {
-    ///         (uploaded_size as f64) / (total_size as f64) * 100.00
-    ///     };
-    ///     println!("{:.2}%", percentage);
+    /// let percentage = if total_size == 0 {
+    /// 100.0
+    /// } else {
+    /// (uploaded_size as f64) / (total_size as f64) * 100.00
+    /// };
+    /// println!("{:.2}%", percentage);
+    /// });
+    /// ```
+    ///
+    /// 设置上传进度回调，仅对 `send_file()` 生效。
+    /// ```
+    /// let callback = Box::new(|uploaded_size: u64, total_size: u64| {
+    /// let percentage = if total_size == 0 {
+    /// 100.0
+    /// } else {
+    /// (uploaded_size as f64) / (total_size as f64) * 100.00
+    /// };
+    /// println!("{:.2}%", percentage);
     /// });
     /// ```
     pub fn set_callback(mut self, callback: Box<dyn Fn(u64, u64) + Send + Sync + 'static>) -> Self {
         self.callback = Some(callback);
         self
     }
-    /// Upload a file from disk to OSS
+    /// Upload a local file to OSS.
     ///
-    /// If a progress callback is set, the caller receives real-time updates
+    /// If a progress callback is set, it receives real-time updates.
     ///
-    pub async fn send_file(mut self, file: impl ToString) -> Result<Option<String>, Error> {
+    /// 上传本地文件到 OSS。
+    ///
+    /// 若设置回调，将获得实时进度回调。
+    pub async fn send_file(mut self, file: impl Into<String>) -> Result<Option<String>, Error> {
+        let file = file.into();
         // Determine file MIME type
         let file_type = match self.mime {
             Some(mime) => mime,
-            None => match infer::get_from_path(&file.to_string())? {
+            None => match infer::get_from_path(&file)? {
                 Some(ext) => ext.mime_type().to_owned(),
                 None => mime_guess::from_path(
                     &self
@@ -129,7 +181,8 @@ impl AppendObject {
                 .to_string(),
             },
         };
-        self.req.insert_header(header::CONTENT_TYPE, file_type);
+        self.req
+            .insert_header(header::CONTENT_TYPE.as_str(), file_type);
         // Insert tags
         let tags = self
             .tags
@@ -151,13 +204,16 @@ impl AppendObject {
             self.req.insert_header("x-oss-tagging", tags);
         }
         // Open the file
-        let file = File::open(file.to_string()).await?;
+        let file = File::open(&file).await?;
         // Read the file size
         let file_size = file.metadata().await?.len();
         if file_size >= 5_368_709_120 {
             return Err(Error::InvalidFileSize);
         }
-        self.req.insert_header(header::CONTENT_LENGTH, file_size);
+        self.req.insert_header(
+            header::CONTENT_LENGTH.as_str(),
+            file_size.to_string(),
+        );
         // Initialize the data stream for reading file content
         let buf = BufReader::with_capacity(131072, file);
         let stream = ReaderStream::with_capacity(buf, 16384);
@@ -191,15 +247,19 @@ impl AppendObject {
             _ => Err(normal_error(response).await),
         }
     }
-    /// Upload in-memory data to OSS
+    /// Upload in-memory data to OSS.
     ///
+    /// 上传内存数据到 OSS。
     pub async fn send_content(mut self, content: Vec<u8>) -> Result<Option<String>, Error> {
         // Read the file size
         let content_size = content.len();
         if content_size >= 5_368_709_120 {
             return Err(Error::InvalidFileSize);
         }
-        self.req.insert_header(header::CONTENT_LENGTH, content_size);
+        self.req.insert_header(
+            header::CONTENT_LENGTH.as_str(),
+            content_size.to_string(),
+        );
         // Determine file MIME type
         let content_type = match self.mime {
             Some(mime) => mime,
@@ -219,7 +279,8 @@ impl AppendObject {
                 .to_string(),
             },
         };
-        self.req.insert_header(header::CONTENT_TYPE, content_type);
+        self.req
+            .insert_header(header::CONTENT_TYPE.as_str(), content_type);
         // Insert tags
         let tags = self
             .tags

@@ -11,6 +11,10 @@ use super::RefererConfiguration;
 /// Retrieve the referer configuration of a bucket.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/getbucketreferer) for details.
+///
+/// 获取 Bucket 的防盗链配置。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/getbucketreferer)。
 pub struct GetBucketReferer {
     req: OssRequest,
 }
@@ -23,6 +27,8 @@ impl GetBucketReferer {
     }
 
     /// Send the request and return the parsed configuration.
+    ///
+    /// 发送请求并返回解析后的配置。
     pub async fn send(self) -> Result<RefererConfiguration, Error> {
         let response = self.req.send_to_oss()?.await?;
         match response.status() {

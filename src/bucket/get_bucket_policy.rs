@@ -9,6 +9,10 @@ use http::Method;
 /// Retrieve the bucket policy document.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/getbucketpolicy) for details.
+///
+/// 获取 Bucket 策略文档。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/getbucketpolicy)。
 pub struct GetBucketPolicy {
     req: OssRequest,
 }
@@ -21,6 +25,8 @@ impl GetBucketPolicy {
     }
 
     /// Send the request and return the policy JSON.
+    ///
+    /// 发送请求并返回策略 JSON。
     pub async fn send(self) -> Result<String, Error> {
         let response = self.req.send_to_oss()?.await?;
         match response.status() {

@@ -9,8 +9,17 @@ use std::io::Read;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
+/// Logging configuration information.
+///
+/// 日志配置信息。
 pub struct LoggingEnabled {
+    /// Target bucket storing logs.
+    ///
+    /// 存储日志的目标 Bucket。
     pub target_bucket: String,
+    /// Log object key prefix.
+    ///
+    /// 日志对象前缀。
     pub target_prefix: String,
 }
 
@@ -21,7 +30,9 @@ struct BucketLoggingStatus {
     pub logging_enabled: Option<LoggingEnabled>,
 }
 
-/// Retrieve the bucket logging configuration (synchronous)
+/// Retrieve the bucket logging configuration (sync).
+///
+/// 获取 Bucket 日志配置（同步）。
 pub struct GetBucketLoggingSync {
     req: OssRequest,
 }
@@ -31,7 +42,9 @@ impl GetBucketLoggingSync {
         req.insert_query("logging", "");
         GetBucketLoggingSync { req }
     }
-    /// Send the request
+    /// Send the request and return logging configuration if any.
+    ///
+    /// 发送请求并返回日志配置（如有）。
     pub fn send(self) -> Result<Option<LoggingEnabled>, Error> {
         let response = self.req.send_to_oss()?;
         let status = response.status();

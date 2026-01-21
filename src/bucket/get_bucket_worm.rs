@@ -11,6 +11,10 @@ use super::BucketWormConfiguration;
 /// Retrieve the WORM configuration of a bucket.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/getbucketworm) for details.
+///
+/// 获取 Bucket 的 WORM 配置。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/getbucketworm)。
 pub struct GetBucketWorm {
     req: OssRequest,
 }
@@ -23,6 +27,8 @@ impl GetBucketWorm {
     }
 
     /// Send the request and return the parsed configuration.
+    ///
+    /// 发送请求并返回解析后的配置。
     pub async fn send(self) -> Result<BucketWormConfiguration, Error> {
         let response = self.req.send_to_oss()?.await?;
         match response.status() {

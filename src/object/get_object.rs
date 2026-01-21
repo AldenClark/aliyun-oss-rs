@@ -16,9 +16,13 @@ use tokio::{
     io::{AsyncWriteExt, BufWriter},
 };
 
-/// Retrieve the object's content
+/// Retrieve the object's content.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31980.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31980.html) for details.
+///
+/// 获取对象内容。
+///
+/// 详情见 [阿里云文档](https://help.aliyun.com/document_detail/31980.html)。
 pub struct GetObject {
     req: OssRequest,
 }
@@ -28,11 +32,17 @@ impl GetObject {
             req: OssRequest::new(oss, Method::GET),
         }
     }
-    /// Set the response range
+    /// Set the response byte range.
     ///
-    /// `end` must be greater than or equal to `start` and both must be within the valid range; invalid values result in downloading the entire file
+    /// `end` must be >= `start` and within bounds; invalid values download the whole object.
     ///
-    /// Byte indexing starts at 0; for a 500-byte file, the range is 0-499
+    /// Byte indexing starts at 0; for a 500-byte file, the range is 0-499.
+    ///
+    /// 设置响应字节范围。
+    ///
+    /// `end` 必须 >= `start` 且在有效范围内；无效值会下载整个对象。
+    ///
+    /// 字节从 0 开始计数；500 字节文件范围为 0-499。
     pub fn set_range(mut self, start: usize, end: Option<usize>) -> Self {
         self.req.insert_header(
             "Range",
@@ -44,37 +54,49 @@ impl GetObject {
         );
         self
     }
-    /// If the specified time is earlier than the actual modification time, the request succeeds
+    /// Succeeds if the object was modified after the given time.
     ///
+    /// 若对象在给定时间后被修改，请求成功。
     pub fn set_if_modified_since(mut self, if_modified_since: OffsetDateTime) -> Self {
         self.req
             .insert_header("If-Modified-Since", format_gmt(if_modified_since));
         self
     }
-    /// If the specified time is equal to or later than the actual modification time, the request succeeds
+    /// Succeeds if the object was not modified since the given time.
     ///
+    /// 若对象自给定时间起未修改，请求成功。
     pub fn set_if_unmodified_since(mut self, if_unmodified_since: OffsetDateTime) -> Self {
         self.req
             .insert_header("If-Unmodified-Since", format_gmt(if_unmodified_since));
         self
     }
-    /// If the provided ETag matches the object's ETag, the request succeeds
+    /// Succeeds if the provided ETag matches the object's ETag.
     ///
-    /// The ETag verifies whether the data has changed and can be used to check data integrity
-    pub fn set_if_match(mut self, if_match: impl ToString) -> Self {
-        self.req.insert_header("If-Match", if_match);
+    /// ETag can be used to verify whether data has changed.
+    ///
+    /// 当提供的 ETag 与对象 ETag 匹配时请求成功。
+    ///
+    /// ETag 可用于判断数据是否变化。
+    pub fn set_if_match(mut self, if_match: impl Into<String>) -> Self {
+        self.req.insert_header("If-Match", if_match.into());
         self
     }
-    /// If the provided ETag differs from the object's ETag, the request succeeds
+    /// Succeeds if the provided ETag does not match the object's ETag.
     ///
-    pub fn set_if_none_match(mut self, if_none_match: impl ToString) -> Self {
-        self.req.insert_header("If-None-Match", if_none_match);
+    /// 当提供的 ETag 与对象 ETag 不匹配时请求成功。
+    pub fn set_if_none_match(mut self, if_none_match: impl Into<String>) -> Self {
+        self.req.insert_header("If-None-Match", if_none_match.into());
         self
     }
-    /// Download the object to disk
+    /// Download the object to disk.
     ///
-    /// Network paths are not supported. For SMB/NFS and similar storage, mount locally and use the local path
-    pub async fn download_to_file(self, save_path: &str) -> Result<(), Error> {
+    /// Network paths are not supported; mount SMB/NFS locally instead.
+    ///
+    /// 下载对象到本地磁盘。
+    ///
+    /// 不支持网络路径；请先挂载 SMB/NFS 等再使用本地路径。
+    pub async fn download_to_file(self, save_path: impl Into<String>) -> Result<(), Error> {
+        let save_path = save_path.into();
         // Validate path
         if save_path.contains("://") {
             return Err(Error::PathNotSupported);
@@ -86,7 +108,7 @@ impl GetObject {
         match status_code {
             code if code.is_success() => {
                 // Create directory
-                let parent_dir = std::path::Path::new(save_path).parent();
+                let parent_dir = std::path::Path::new(&save_path).parent();
                 if let Some(dir) = parent_dir {
                     create_dir_all(dir).await?;
                 }
@@ -94,7 +116,7 @@ impl GetObject {
                 let file = OpenOptions::new()
                     .write(true)
                     .create_new(true)
-                    .open(save_path)
+                    .open(&save_path)
                     .await?;
                 // Create write buffer
                 let mut writer = BufWriter::with_capacity(131072, file);
@@ -113,9 +135,13 @@ impl GetObject {
             _ => Err(normal_error(response).await),
         }
     }
-    /// Download the object and return the content
+    /// Download the object and return the content as bytes.
     ///
-    /// If the object is large, this method may use too much memory; use with caution
+    /// Large objects may consume too much memory; use with caution.
+    ///
+    /// 下载对象并返回字节内容。
+    ///
+    /// 大对象可能占用大量内存，请谨慎使用。
     pub async fn download(self) -> Result<Bytes, Error> {
         // Send request
         let response = self.req.send_to_oss()?.await?;
@@ -126,21 +152,39 @@ impl GetObject {
             _ => Err(normal_error(response).await),
         }
     }
-    /// Download the object and return a data stream
+    /// Download the object as a stream.
     ///
-    /// Use this if the object is large and you do not want to save directly to a file; process the stream yourself
+    /// Use this for large objects and process the stream yourself.
     ///
     /// ```ignore
     /// use futures_util::StreamExt;
     ///
     /// let mut stream = object.get_object().download_to_stream().await.unwrap();
     /// while let Some(item) = stream.next().await {
-    ///     match item {
-    ///         Ok(bytes) => {
-    ///             // Do something with bytes...
-    ///         }
-    ///         Err(e) => eprintln!("Error: {}", e),
-    ///     }
+    /// match item {
+    /// Ok(bytes) => {
+    /// // Do something with bytes...
+    /// }
+    /// Err(e) => eprintln!("Error: {}", e),
+    /// }
+    /// }
+    /// ```
+    ///
+    /// 以流式方式下载对象。
+    ///
+    /// 适用于大对象，调用方自行处理流。
+    ///
+    /// ```ignore
+    /// use futures_util::StreamExt;
+    ///
+    /// let mut stream = object.get_object().download_to_stream().await.unwrap();
+    /// while let Some(item) = stream.next().await {
+    /// match item {
+    /// Ok(bytes) => {
+    /// // Do something with bytes...
+    /// }
+    /// Err(e) => eprintln!("Error: {}", e),
+    /// }
     /// }
     /// ```
     pub async fn download_to_stream(

@@ -12,6 +12,12 @@ use http_body_util::Full;
 /// Returns the WORM ID on success.
 ///
 /// See the [Alibaba Cloud documentation](https://help.aliyun.com/zh/oss/developer-reference/initiatebucketworm) for details.
+///
+/// 启用 Bucket 的 WORM 保留策略。
+///
+/// 成功时返回 WORM ID。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/zh/oss/developer-reference/initiatebucketworm)。
 pub struct InitiateBucketWorm {
     req: OssRequest,
     retention_days: Option<u32>,
@@ -29,12 +35,16 @@ impl InitiateBucketWorm {
     }
 
     /// Set the retention period in days (1-36500).
+    ///
+    /// 设置保留天数（1-36500）。
     pub fn set_retention_days(mut self, days: u32) -> Self {
         self.retention_days = Some(days);
         self
     }
 
-    /// Send the request and return the generated WORM ID.
+    /// Send the request and return the WORM ID.
+    ///
+    /// 发送请求并返回 WORM ID。
     pub async fn send(mut self) -> Result<String, Error> {
         let days = self.retention_days.ok_or(Error::MissingRequestBody)?;
         let body = format!(

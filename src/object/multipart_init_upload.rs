@@ -17,9 +17,13 @@ struct InitiateMultipartUploadResult {
     upload_id: String,
 }
 
-/// Initiate a multipart upload
+/// Initiate a multipart upload.
 ///
-/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31992.html) for details
+/// See the [Alibaba Cloud documentation](https://help.aliyun.com/document_detail/31992.html) for details.
+///
+/// 初始化分片上传。
+///
+/// 详情参见 [阿里云文档](https://help.aliyun.com/document_detail/31992.html)。
 pub struct InitUpload {
     req: OssRequest,
     tags: HashMap<String, String>,
@@ -33,56 +37,86 @@ impl InitUpload {
             tags: HashMap::new(),
         }
     }
-    /// Set the file's MIME type
+    /// Set the object's MIME type.
     ///
-    /// If no MIME type is set, the default (application/octet-stream) is used
-    pub fn set_mime(mut self, mime: impl ToString) -> Self {
-        self.req.insert_header(header::CONTENT_TYPE, mime);
-        self
-    }
-    /// Set the file's access permissions
-    pub fn set_acl(mut self, acl: Acl) -> Self {
-        self.req.insert_header("x-oss-object-acl", acl);
-        self
-    }
-    /// Set the file's storage class
-    pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
-        self.req.insert_header("x-oss-storage-class", storage_class);
-        self
-    }
-    /// Cache behavior of the webpage when the file is downloaded
-    pub fn set_cache_control(mut self, cache_control: CacheControl) -> Self {
-        self.req.insert_header(header::CACHE_CONTROL, cache_control);
-        self
-    }
-    /// Set how the file is presented
-    pub fn set_content_disposition(mut self, content_disposition: ContentDisposition) -> Self {
+    /// If not set, fallback is `application/octet-stream`.
+    ///
+    /// 设置对象的 MIME 类型。
+    ///
+    /// 未设置时默认使用 `application/octet-stream`。
+    pub fn set_mime(mut self, mime: impl Into<String>) -> Self {
         self.req
-            .insert_header(header::CONTENT_DISPOSITION, content_disposition);
+            .insert_header(header::CONTENT_TYPE.as_str(), mime.into());
         self
     }
-    /// Disallow overwriting files with the same name
+    /// Set object ACL.
+    ///
+    /// 设置对象 ACL。
+    pub fn set_acl(mut self, acl: Acl) -> Self {
+        self.req
+            .insert_header("x-oss-object-acl", acl.to_string());
+        self
+    }
+    /// Set object storage class.
+    ///
+    /// 设置对象存储类型。
+    pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
+        self.req.insert_header(
+            "x-oss-storage-class",
+            storage_class.to_string(),
+        );
+        self
+    }
+    /// Set cache-control behavior when the object is downloaded.
+    ///
+    /// 设置对象下载时的缓存策略。
+    pub fn set_cache_control(mut self, cache_control: CacheControl) -> Self {
+        self.req
+            .insert_header(header::CACHE_CONTROL.as_str(), cache_control.to_string());
+        self
+    }
+    /// Set content disposition for downloads.
+    ///
+    /// 设置下载时的内容呈现方式。
+    pub fn set_content_disposition(mut self, content_disposition: ContentDisposition) -> Self {
+        self.req.insert_header(
+            header::CONTENT_DISPOSITION.as_str(),
+            content_disposition.to_string(),
+        );
+        self
+    }
+    /// Disallow overwriting objects with the same key.
+    ///
+    /// 禁止覆盖同名对象。
     pub fn forbid_overwrite(mut self) -> Self {
         self.req.insert_header("x-oss-forbid-overwrite", "true");
         self
     }
-    /// Set additional metadata
+    /// Set custom object metadata.
     ///
-    /// Keys may only contain letters, numbers, and hyphens; metadata with other characters will be discarded
-    pub fn set_meta(mut self, key: impl ToString, value: impl ToString) -> Self {
-        let key = key.to_string();
+    /// Metadata keys may only contain letters, numbers, and hyphens.
+    ///
+    /// 设置对象自定义元数据。
+    ///
+    /// 元数据键仅允许字母、数字和连字符。
+    pub fn set_meta(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        let key = key.into();
         if !invalid_metadata_key(&key) {
             self.req
-                .insert_header(format!("x-oss-meta-{}", key.to_string()), value);
+                .insert_header(format!("x-oss-meta-{}", key), value.into());
         }
         self
     }
-    /// Set tag information
-    pub fn set_tagging(mut self, key: impl ToString, value: impl ToString) -> Self {
-        self.tags.insert(key.to_string(), value.to_string());
+    /// Add a tag key/value pair.
+    ///
+    /// 追加对象标签键值对。
+    pub fn set_tagging(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.tags.insert(key.into(), value.into());
         self
     }
-    /// Send the request
+    /// Send the request and return the upload ID.
+    ///
+    /// 发送请求并返回上传 ID。
     pub async fn send(mut self) -> Result<String, Error> {
         // Insert tags
         let tags = self
