@@ -35,8 +35,8 @@ impl GetBucketLocationSync {
             let mut reader = response.into_body().into_reader();
             let mut buf = Vec::new();
             reader.read_to_end(&mut buf)?;
-            let result: LocationConstraint = serde_xml_rs::from_reader(&*buf)
-                .map_err(|_| Error::OssInvalidResponse(Some(Bytes::from(buf))))?;
+            let result: LocationConstraint =
+                serde_xml_rs::from_reader(&*buf).map_err(|_| Error::OssInvalidResponse(Some(Bytes::from(buf))))?;
             Ok(result.location_constraint)
         } else {
             Err(normal_error_sync(response))

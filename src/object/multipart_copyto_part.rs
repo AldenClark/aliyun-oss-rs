@@ -39,11 +39,7 @@ impl CopyToPart {
     pub fn set_source_range(mut self, start: usize, end: Option<usize>) -> Self {
         self.req.insert_header(
             "x-oss-copy-source-range",
-            format!(
-                "bytes={}-{}",
-                start,
-                end.map(|v| v.to_string()).unwrap_or_else(|| String::new())
-            ),
+            format!("bytes={}-{}", start, end.map(|v| v.to_string()).unwrap_or_else(|| String::new())),
         );
         self
     }
@@ -51,20 +47,14 @@ impl CopyToPart {
     ///
     /// 仅当源对象在指定时间之后被修改时才复制。
     pub fn set_if_modified_since(mut self, if_modified_since: OffsetDateTime) -> Self {
-        self.req.insert_header(
-            "x-oss-copy-source-if-modified-since",
-            format_gmt(if_modified_since),
-        );
+        self.req.insert_header("x-oss-copy-source-if-modified-since", format_gmt(if_modified_since));
         self
     }
     /// Copy only if the source is not modified after the given time.
     ///
     /// 仅当源对象在指定时间之后未被修改时才复制。
     pub fn set_if_unmodified_since(mut self, if_unmodified_since: OffsetDateTime) -> Self {
-        self.req.insert_header(
-            "x-oss-copy-source-if-unmodified-since",
-            format_gmt(if_unmodified_since),
-        );
+        self.req.insert_header("x-oss-copy-source-if-unmodified-since", format_gmt(if_unmodified_since));
         self
     }
     /// Copy only if the source ETag matches the given value.
@@ -75,8 +65,7 @@ impl CopyToPart {
     ///
     /// ETag 可用于检测数据变更和校验完整性。
     pub fn set_if_match(mut self, if_match: impl Into<String>) -> Self {
-        self.req
-            .insert_header("x-oss-copy-source-if-match", if_match.into());
+        self.req.insert_header("x-oss-copy-source-if-match", if_match.into());
         self
     }
     /// Copy only if the source ETag does not match the given value.
@@ -87,8 +76,7 @@ impl CopyToPart {
     ///
     /// ETag 可用于检测数据变更和校验完整性。
     pub fn set_if_none_match(mut self, if_none_match: impl Into<String>) -> Self {
-        self.req
-            .insert_header("x-oss-copy-source-if-none-match", if_none_match.into());
+        self.req.insert_header("x-oss-copy-source-if-none-match", if_none_match.into());
         self
     }
     /// Send the copy request and return the ETag.

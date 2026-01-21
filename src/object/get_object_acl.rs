@@ -50,9 +50,8 @@ impl GetObjectAcl {
         let status_code = response.status();
         match status_code {
             code if code.is_success() => {
-                let response_bytes = body_to_bytes(response.into_body())
-                    .await
-                    .map_err(|_| Error::OssInvalidResponse(None))?;
+                let response_bytes =
+                    body_to_bytes(response.into_body()).await.map_err(|_| Error::OssInvalidResponse(None))?;
                 let acl: AccessControlPolicy = serde_xml_rs::from_reader(&*response_bytes)
                     .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
                 Ok(acl.access_control_list.grant)

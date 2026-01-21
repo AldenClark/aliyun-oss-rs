@@ -25,10 +25,7 @@ impl PutBucketRefererSync {
         req.insert_query("referer", "");
         PutBucketRefererSync {
             req,
-            config: RefererConfiguration {
-                allow_empty_referer: true,
-                referer_list: RefererList::default(),
-            },
+            config: RefererConfiguration { allow_empty_referer: true, referer_list: RefererList::default() },
         }
     }
 
@@ -70,9 +67,7 @@ mod tests {
     fn test_referer_serialization() {
         let config = RefererConfiguration {
             allow_empty_referer: false,
-            referer_list: RefererList {
-                items: vec!["https://example.com".to_string()],
-            },
+            referer_list: RefererList { items: vec!["https://example.com".to_string()] },
         };
         let xml = serde_xml_rs::to_string(&config).unwrap();
         assert!(xml.contains("<RefererConfiguration>"));

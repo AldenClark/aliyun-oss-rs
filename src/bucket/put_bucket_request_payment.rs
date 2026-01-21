@@ -7,7 +7,7 @@ use bytes::Bytes;
 use http::Method;
 use http_body_util::Full;
 
-use super::{RequestPaymentConfiguration, RequestPayer};
+use super::{RequestPayer, RequestPaymentConfiguration};
 
 /// Configure requester pays for a bucket.
 ///
@@ -25,12 +25,7 @@ impl PutBucketRequestPayment {
     pub(super) fn new(oss: Oss) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("requestPayment", "");
-        PutBucketRequestPayment {
-            req,
-            config: RequestPaymentConfiguration {
-                payer: RequestPayer::default(),
-            },
-        }
+        PutBucketRequestPayment { req, config: RequestPaymentConfiguration { payer: RequestPayer::default() } }
     }
 
     /// Set who pays for the requests.

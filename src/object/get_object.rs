@@ -28,9 +28,7 @@ pub struct GetObject {
 }
 impl GetObject {
     pub(super) fn new(oss: Oss) -> Self {
-        GetObject {
-            req: OssRequest::new(oss, Method::GET),
-        }
+        GetObject { req: OssRequest::new(oss, Method::GET) }
     }
     /// Set the response byte range.
     ///
@@ -46,11 +44,7 @@ impl GetObject {
     pub fn set_range(mut self, start: usize, end: Option<usize>) -> Self {
         self.req.insert_header(
             "Range",
-            format!(
-                "bytes={}-{}",
-                start,
-                end.map(|v| v.to_string()).unwrap_or_else(|| String::new())
-            ),
+            format!("bytes={}-{}", start, end.map(|v| v.to_string()).unwrap_or_else(|| String::new())),
         );
         self
     }
@@ -58,16 +52,14 @@ impl GetObject {
     ///
     /// 若对象在给定时间后被修改，请求成功。
     pub fn set_if_modified_since(mut self, if_modified_since: OffsetDateTime) -> Self {
-        self.req
-            .insert_header("If-Modified-Since", format_gmt(if_modified_since));
+        self.req.insert_header("If-Modified-Since", format_gmt(if_modified_since));
         self
     }
     /// Succeeds if the object was not modified since the given time.
     ///
     /// 若对象自给定时间起未修改，请求成功。
     pub fn set_if_unmodified_since(mut self, if_unmodified_since: OffsetDateTime) -> Self {
-        self.req
-            .insert_header("If-Unmodified-Since", format_gmt(if_unmodified_since));
+        self.req.insert_header("If-Unmodified-Since", format_gmt(if_unmodified_since));
         self
     }
     /// Succeeds if the provided ETag matches the object's ETag.
@@ -113,11 +105,7 @@ impl GetObject {
                     create_dir_all(dir).await?;
                 }
                 // Create file
-                let file = OpenOptions::new()
-                    .write(true)
-                    .create_new(true)
-                    .open(&save_path)
-                    .await?;
+                let file = OpenOptions::new().write(true).create_new(true).open(&save_path).await?;
                 // Create write buffer
                 let mut writer = BufWriter::with_capacity(131072, file);
                 // Read byte stream
@@ -196,13 +184,10 @@ impl GetObject {
         let status_code = response.status();
         match status_code {
             code if code.is_success() => {
-                let stream = response
-                    .into_body()
-                    .into_data_stream()
-                    .map(|item| match item {
-                        Ok(bytes) => Ok(bytes),
-                        Err(e) => Err(e.into()),
-                    });
+                let stream = response.into_body().into_data_stream().map(|item| match item {
+                    Ok(bytes) => Ok(bytes),
+                    Err(e) => Err(e.into()),
+                });
                 Ok(Box::pin(stream))
             }
             _ => Err(normal_error(response).await),

@@ -67,27 +67,19 @@ impl GetObjectMetaSync {
                     .get("ETag")
                     .and_then(|header| header.to_str().ok().map(|s| s.trim_matches('"').to_owned()))
                     .unwrap_or_else(|| String::new());
-                let last_access_time = headers
-                    .get("x-oss-last-access-time")
-                    .and_then(|header| header.to_str().ok().map(|s| s.to_owned()));
+                let last_access_time =
+                    headers.get("x-oss-last-access-time").and_then(|header| header.to_str().ok().map(|s| s.to_owned()));
                 let last_modified = headers
                     .get("Last-Modified")
                     .and_then(|header| header.to_str().ok().map(|s| s.to_owned()))
                     .unwrap_or_else(|| String::new());
-                Ok(ObjectMeta {
-                    content_length,
-                    e_tag,
-                    last_access_time,
-                    last_modified,
-                })
+                Ok(ObjectMeta { content_length, e_tag, last_access_time, last_modified })
             }
             _ => {
-                let x_oss_error = response.headers().get("x-oss-err").and_then(|header| {
-                    general_purpose::STANDARD
-                        .decode(header)
-                        .ok()
-                        .map(|v| Bytes::from(v))
-                });
+                let x_oss_error = response
+                    .headers()
+                    .get("x-oss-err")
+                    .and_then(|header| general_purpose::STANDARD.decode(header).ok().map(|v| Bytes::from(v)));
                 match x_oss_error {
                     None => Err(Error::OssInvalidError(status_code, Bytes::new())),
                     Some(response_bytes) => {

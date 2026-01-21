@@ -22,10 +22,7 @@ impl ExtendBucketWormSync {
         let mut req = OssRequest::new(oss, Method::POST);
         req.insert_query("wormId", worm_id.into());
         req.insert_query("comp", "extend");
-        ExtendBucketWormSync {
-            req,
-            retention_days: None,
-        }
+        ExtendBucketWormSync { req, retention_days: None }
     }
 
     /// Set the new retention period in days.

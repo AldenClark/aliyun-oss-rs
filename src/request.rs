@@ -2,21 +2,34 @@ use crate::{
     Error,
     common::{url_encode, url_encode_path},
 };
+use aws_lc_rs::{digest, hmac};
 use bytes::Bytes;
 use http::{Method, header};
 use http_body::Body as HttpBody;
 use http_body_util::{BodyExt, Empty, combinators::BoxBody};
 use hyper::Request;
+#[cfg(feature = "_async-rustls")]
+use hyper_rustls::HttpsConnectorBuilder;
+#[cfg(feature = "async-native-tls")]
 use hyper_tls::HttpsConnector;
 use hyper_util::client::legacy::{Client, ResponseFuture};
 use hyper_util::rt::TokioExecutor;
-use ring::{digest, hmac};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::error::Error as StdError;
 use time::OffsetDateTime;
 
 pub(crate) use crate::oss::Oss;
+
+#[cfg(all(feature = "_async-rustls", feature = "async-native-tls"))]
+compile_error!(
+    "Async TLS backend conflict: enable exactly one of `async` (default, rustls) or `async-native-tls`."
+);
+
+#[cfg(all(feature = "_async-base", not(any(feature = "_async-rustls", feature = "async-native-tls"))))]
+compile_error!(
+    "Async TLS backend missing: enable `async` (default, rustls) or `async-native-tls`."
+);
 
 /// Builder for requests sent to OSS.
 ///
@@ -40,9 +53,7 @@ impl OssRequest {
             method,
             headers: HashMap::with_capacity(10),
             queries: HashMap::with_capacity(10),
-            body: Empty::<Bytes>::new()
-                .map_err(|never| -> Box<dyn StdError + Send + Sync> { match never {} })
-                .boxed(),
+            body: Empty::<Bytes>::new().map_err(|never| -> Box<dyn StdError + Send + Sync> { match never {} }).boxed(),
         }
     }
 
@@ -92,22 +103,14 @@ impl OssRequest {
 
     pub fn uri(&self) -> String {
         // protocol
-        let protocol = if self.oss.enable_https {
-            "https://"
-        } else {
-            "http://"
-        };
+        let protocol = if self.oss.enable_https { "https://" } else { "http://" };
         // host
         let host = if let Some(custom_domain) = self.oss.custom_domain.clone() {
             custom_domain.to_string()
         } else {
             format!(
                 "{}{}",
-                self.oss
-                    .bucket
-                    .clone()
-                    .map(|v| format!("{}.", v))
-                    .unwrap_or_else(|| String::new()),
+                self.oss.bucket.clone().map(|v| format!("{}.", v)).unwrap_or_else(|| String::new()),
                 self.oss.endpoint
             )
         };
@@ -118,31 +121,17 @@ impl OssRequest {
             .map(|(key, value)| {
                 let key = url_encode(key);
                 let value = value.to_string();
-                if value.is_empty() {
-                    key
-                } else {
-                    format!("{}={}", key, url_encode(&value))
-                }
+                if value.is_empty() { key } else { format!("{}={}", key, url_encode(&value)) }
             })
             .collect::<Vec<_>>()
             .join("&");
-        let query_str = if query.is_empty() {
-            String::new()
-        } else {
-            format!("?{}", query)
-        };
+        let query_str = if query.is_empty() { String::new() } else { format!("?{}", query) };
         // build final url
         format!(
             "{}{}/{}{}",
             protocol,
             host,
-            url_encode_path(
-                &self
-                    .oss
-                    .object
-                    .clone()
-                    .unwrap_or_else(|| String::new().into())
-            ),
+            url_encode_path(&self.oss.object.clone().unwrap_or_else(|| String::new().into())),
             query_str
         )
     }
@@ -156,10 +145,7 @@ impl OssRequest {
         self.insert_query("x-oss-signature-version", "OSS4-HMAC-SHA256");
         self.insert_query(
             "x-oss-credential",
-            format!(
-                "{}/{}/{}/oss/aliyun_v4_request",
-                self.oss.ak_id, date_short, region
-            ),
+            format!("{}/{}/{}/oss/aliyun_v4_request", self.oss.ak_id, date_short, region),
         );
         self.insert_query("x-oss-date", &date);
         self.insert_query("x-oss-expires", expires.to_string());
@@ -189,15 +175,9 @@ impl OssRequest {
         let canonical_request = self.canonical_request_v4(&additional_headers);
         let signature = self.signature_v4(&canonical_request, &date, &date_short, &region);
 
-        let credential = format!(
-            "{}/{}/{}/oss/aliyun_v4_request",
-            self.oss.ak_id, date_short, region
-        );
+        let credential = format!("{}/{}/{}/oss/aliyun_v4_request", self.oss.ak_id, date_short, region);
         let authorization = if additional_headers.is_empty() {
-            format!(
-                "OSS4-HMAC-SHA256 Credential={},Signature={}",
-                credential, signature
-            )
+            format!("OSS4-HMAC-SHA256 Credential={},Signature={}", credential, signature)
         } else {
             format!(
                 "OSS4-HMAC-SHA256 Credential={},AdditionalHeaders={},Signature={}",
@@ -231,7 +211,10 @@ impl OssRequest {
         }
         let request = req.body(self.body)?;
         if self.oss.enable_https {
+            #[cfg(feature = "async-native-tls")]
             let https = HttpsConnector::new();
+            #[cfg(feature = "_async-rustls")]
+            let https = HttpsConnectorBuilder::new().with_webpki_roots().https_or_http().enable_http1().build();
             let client: Client<_, BoxBody<Bytes, Box<dyn StdError + Send + Sync>>> =
                 Client::builder(TokioExecutor::new()).build(https);
             Ok(client.request(request))
@@ -250,19 +233,14 @@ fn format_oss_date(datetime: OffsetDateTime) -> String {
 }
 
 fn format_oss_date_short(datetime: OffsetDateTime) -> String {
-    datetime
-        .format(&time::format_description::parse("[year][month][day]").expect("valid format"))
-        .expect("formatting")
+    datetime.format(&time::format_description::parse("[year][month][day]").expect("valid format")).expect("formatting")
 }
 
 fn additional_headers_v4(headers: &HashMap<String, String>) -> Vec<String> {
     let mut list = Vec::new();
     for key in headers.keys() {
         let lower = key.to_ascii_lowercase();
-        if lower == "content-type"
-            || lower == "content-md5"
-            || lower.starts_with("x-oss-")
-            || lower == "authorization"
+        if lower == "content-type" || lower == "content-md5" || lower.starts_with("x-oss-") || lower == "authorization"
         {
             continue;
         }
@@ -278,11 +256,8 @@ fn hex_encode(bytes: &[u8]) -> String {
 
 impl OssRequest {
     fn canonical_query_v4(&self) -> String {
-        let mut items: Vec<(String, String)> = self
-            .queries
-            .iter()
-            .map(|(k, v)| (url_encode(k), url_encode(v)))
-            .collect();
+        let mut items: Vec<(String, String)> =
+            self.queries.iter().map(|(k, v)| (url_encode(k), url_encode(v))).collect();
         items.sort_by(|a, b| a.0.cmp(&b.0).then(a.1.cmp(&b.1)));
         let mut out = String::new();
         for (key, value) in items {
@@ -311,11 +286,7 @@ impl OssRequest {
                 path.push_str(&url_encode_path(object));
             }
         }
-        if path.is_empty() {
-            "/".to_string()
-        } else {
-            path
-        }
+        if path.is_empty() { "/".to_string() } else { path }
     }
 
     fn canonical_headers_v4(&self, additional_headers: &[String]) -> String {
@@ -342,11 +313,7 @@ impl OssRequest {
     }
 
     fn canonical_request_v4(&self, additional_headers: &[String]) -> String {
-        let hashed_payload = self
-            .headers
-            .get("x-oss-content-sha256")
-            .map(|v| v.as_str())
-            .unwrap_or("UNSIGNED-PAYLOAD");
+        let hashed_payload = self.headers.get("x-oss-content-sha256").map(|v| v.as_str()).unwrap_or("UNSIGNED-PAYLOAD");
         format!(
             "{}\n{}\n{}\n{}\n{}\n{}",
             self.method,
@@ -358,13 +325,7 @@ impl OssRequest {
         )
     }
 
-    fn signature_v4(
-        &self,
-        canonical_request: &str,
-        date: &str,
-        date_short: &str,
-        region: &str,
-    ) -> String {
+    fn signature_v4(&self, canonical_request: &str, date: &str, date_short: &str, region: &str) -> String {
         let hashed_request = hex_encode(digest::digest(&digest::SHA256, canonical_request.as_bytes()).as_ref());
         let scope = format!("{}/{}/oss/aliyun_v4_request", date_short, region);
         let string_to_sign = format!("OSS4-HMAC-SHA256\n{}\n{}\n{}", date, scope, hashed_request);
@@ -411,9 +372,6 @@ mod tests {
         oss.set_security_token("token");
         let mut req = OssRequest::new(oss, Method::GET);
         req.apply_security_token();
-        assert_eq!(
-            req.headers.get("x-oss-security-token").map(|s| s.as_str()),
-            Some("token")
-        );
+        assert_eq!(req.headers.get("x-oss-security-token").map(|s| s.as_str()), Some("token"));
     }
 }

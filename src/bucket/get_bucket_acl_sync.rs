@@ -47,12 +47,9 @@ impl GetBucketAclSync {
             let mut reader = response.into_body().into_reader();
             let mut buf = Vec::new();
             reader.read_to_end(&mut buf)?;
-            let result: AccessControlPolicy = serde_xml_rs::from_reader(&*buf)
-                .map_err(|_| Error::OssInvalidResponse(Some(Bytes::from(buf))))?;
-            Ok(BucketAcl {
-                owner: result.owner,
-                acl: result.access_control_list.grant,
-            })
+            let result: AccessControlPolicy =
+                serde_xml_rs::from_reader(&*buf).map_err(|_| Error::OssInvalidResponse(Some(Bytes::from(buf))))?;
+            Ok(BucketAcl { owner: result.owner, acl: result.access_control_list.grant })
         } else {
             Err(normal_error_sync(response))
         }

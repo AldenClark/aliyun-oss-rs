@@ -27,17 +27,8 @@ struct ProgressReader<R> {
 }
 
 impl<R: Read> ProgressReader<R> {
-    fn new(
-        inner: R,
-        total: u64,
-        callback: Option<Box<dyn Fn(u64, u64) + Send + Sync + 'static>>,
-    ) -> Self {
-        ProgressReader {
-            inner,
-            uploaded: 0,
-            total,
-            callback,
-        }
+    fn new(inner: R, total: u64, callback: Option<Box<dyn Fn(u64, u64) + Send + Sync + 'static>>) -> Self {
+        ProgressReader { inner, uploaded: 0, total, callback }
     }
 }
 
@@ -59,10 +50,7 @@ impl UploadPartSync {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("partNumber", part_number.to_string());
         req.insert_query("uploadId", upload_id.into());
-        UploadPartSync {
-            req,
-            callback: None,
-        }
+        UploadPartSync { req, callback: None }
     }
     /// Set an upload progress callback, only effective for `send_file()`.
     /// ```
@@ -101,8 +89,7 @@ impl UploadPartSync {
         if file_size >= 5_368_709_120 || file_size < 102_400 {
             return Err(Error::InvalidFileSize);
         }
-        self.req
-            .insert_header(header::CONTENT_LENGTH.as_str(), file_size.to_string());
+        self.req.insert_header(header::CONTENT_LENGTH.as_str(), file_size.to_string());
         let reader = BufReader::with_capacity(131072, file);
         let reader: Box<dyn Read> = match self.callback {
             Some(callback) => Box::new(ProgressReader::new(reader, file_size, Some(callback))),
@@ -132,8 +119,7 @@ impl UploadPartSync {
         if content_size >= 5_000_000_000 {
             return Err(Error::InvalidFileSize);
         }
-        self.req
-            .insert_header(header::CONTENT_LENGTH.as_str(), content_size.to_string());
+        self.req.insert_header(header::CONTENT_LENGTH.as_str(), content_size.to_string());
         self.req.set_body(content);
         let response = self.req.send_to_oss()?;
         let status_code = response.status();

@@ -26,10 +26,7 @@ impl PutBucketCors {
     pub(super) fn new(oss: Oss) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("cors", "");
-        PutBucketCors {
-            req,
-            cors: CorsConfiguration::default(),
-        }
+        PutBucketCors { req, cors: CorsConfiguration::default() }
     }
 
     /// Replace the complete set of CORS rules.
@@ -79,20 +76,12 @@ pub struct CorsRule {
     ///
     /// 允许的 HTTP 方法。
     pub allowed_methods: Vec<String>,
-    #[serde(
-        rename = "AllowedHeader",
-        skip_serializing_if = "Vec::is_empty",
-        default
-    )]
+    #[serde(rename = "AllowedHeader", skip_serializing_if = "Vec::is_empty", default)]
     /// Allowed headers.
     ///
     /// 允许的请求头。
     pub allowed_headers: Vec<String>,
-    #[serde(
-        rename = "ExposeHeader",
-        skip_serializing_if = "Vec::is_empty",
-        default
-    )]
+    #[serde(rename = "ExposeHeader", skip_serializing_if = "Vec::is_empty", default)]
     /// Exposed headers.
     ///
     /// 允许暴露的响应头。
@@ -108,10 +97,7 @@ impl CorsRule {
     /// Create a new CORS rule with required origins and methods.
     ///
     /// 使用必填的来源和方法创建 CORS 规则。
-    pub fn new(
-        allowed_origins: Vec<impl Into<String>>,
-        allowed_methods: Vec<impl Into<String>>,
-    ) -> Self {
+    pub fn new(allowed_origins: Vec<impl Into<String>>, allowed_methods: Vec<impl Into<String>>) -> Self {
         CorsRule {
             allowed_origins: allowed_origins.into_iter().map(Into::into).collect(),
             allowed_methods: allowed_methods.into_iter().map(Into::into).collect(),

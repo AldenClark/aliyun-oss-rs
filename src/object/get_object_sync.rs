@@ -23,9 +23,7 @@ pub struct GetObjectSync {
 }
 impl GetObjectSync {
     pub(super) fn new(oss: Oss) -> Self {
-        GetObjectSync {
-            req: OssRequest::new(oss, Method::GET),
-        }
+        GetObjectSync { req: OssRequest::new(oss, Method::GET) }
     }
     /// Set the response byte range.
     ///
@@ -41,11 +39,7 @@ impl GetObjectSync {
     pub fn set_range(mut self, start: usize, end: Option<usize>) -> Self {
         self.req.insert_header(
             "Range",
-            format!(
-                "bytes={}-{}",
-                start,
-                end.map(|v| v.to_string()).unwrap_or_else(|| String::new())
-            ),
+            format!("bytes={}-{}", start, end.map(|v| v.to_string()).unwrap_or_else(|| String::new())),
         );
         self
     }
@@ -53,16 +47,14 @@ impl GetObjectSync {
     ///
     /// 若对象在给定时间后被修改，请求成功。
     pub fn set_if_modified_since(mut self, if_modified_since: time::OffsetDateTime) -> Self {
-        self.req
-            .insert_header("If-Modified-Since", format_gmt(if_modified_since));
+        self.req.insert_header("If-Modified-Since", format_gmt(if_modified_since));
         self
     }
     /// Succeeds if the object was not modified since the given time.
     ///
     /// 若对象自给定时间起未修改，请求成功。
     pub fn set_if_unmodified_since(mut self, if_unmodified_since: time::OffsetDateTime) -> Self {
-        self.req
-            .insert_header("If-Unmodified-Since", format_gmt(if_unmodified_since));
+        self.req.insert_header("If-Unmodified-Since", format_gmt(if_unmodified_since));
         self
     }
     /// Succeeds if the provided ETag matches the object's ETag.
@@ -102,10 +94,7 @@ impl GetObjectSync {
                 if let Some(dir) = Path::new(&save_path).parent() {
                     create_dir_all(dir)?;
                 }
-                let file = OpenOptions::new()
-                    .write(true)
-                    .create_new(true)
-                    .open(&save_path)?;
+                let file = OpenOptions::new().write(true).create_new(true).open(&save_path)?;
                 let mut writer = BufWriter::with_capacity(131072, file);
                 let mut reader = response.into_body().into_reader();
                 std::io::copy(&mut reader, &mut writer)?;

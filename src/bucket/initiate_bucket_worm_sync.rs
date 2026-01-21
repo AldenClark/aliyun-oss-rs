@@ -26,10 +26,7 @@ impl InitiateBucketWormSync {
         let mut req = OssRequest::new(oss, Method::POST);
         req.insert_query("worm", "");
         req.insert_query("comp", "initiate");
-        InitiateBucketWormSync {
-            req,
-            retention_days: None,
-        }
+        InitiateBucketWormSync { req, retention_days: None }
     }
 
     /// Set the retention period in days (1-36500).

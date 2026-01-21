@@ -4,7 +4,7 @@
 
 #[doc(hidden)]
 pub use self::oss_bucket::OssBucket;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 pub use self::{
     abort_bucket_worm::AbortBucketWorm,
     complete_bucket_worm::CompleteBucketWorm,
@@ -15,6 +15,7 @@ pub use self::{
     del_bucket_lifecycle::DelBucketLifecycle,
     del_bucket_logging::DelBucketLogging,
     del_bucket_policy::DelBucketPolicy,
+    del_bucket_tags::DelBucketTags,
     del_bucket_website::DelBucketWebsite,
     del_objects::DelObjects,
     extend_bucket_worm::ExtendBucketWorm,
@@ -37,10 +38,10 @@ pub use self::{
     get_bucket_worm::GetBucketWorm,
     initiate_bucket_worm::InitiateBucketWorm,
     list_bucket_inventory::ListBucketInventory,
-    list_object_versions::ListObjectVersions,
-    list_objects_v1::ListObjectsV1,
     list_multipart_uploads::ListUploads,
+    list_object_versions::ListObjectVersions,
     list_objects::ListObjects,
+    list_objects_v1::ListObjectsV1,
     put_bucket::PutBucket,
     put_bucket_acl::PutBucketAcl,
     put_bucket_cors::{CorsRule, PutBucketCors},
@@ -55,10 +56,9 @@ pub use self::{
     put_bucket_transfer_acceleration::PutBucketTransferAcceleration,
     put_bucket_versioning::PutBucketVersioning,
     put_bucket_website::PutBucketWebsite,
-    del_bucket_tags::DelBucketTags,
 };
 
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 pub use self::{
     abort_bucket_worm_sync::AbortBucketWormSync,
     complete_bucket_worm_sync::CompleteBucketWormSync,
@@ -112,210 +112,210 @@ pub use self::{
     put_bucket_website_sync::PutBucketWebsiteSync,
 };
 
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod abort_bucket_worm;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod complete_bucket_worm;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod del_bucket;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod del_bucket_cors;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod del_bucket_encryption;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod del_bucket_inventory;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod del_bucket_lifecycle;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod del_bucket_logging;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod del_bucket_policy;
-#[cfg(feature = "async")]
-mod del_bucket_website;
-#[cfg(feature = "async")]
-mod del_objects;
-#[cfg(feature = "async")]
-mod extend_bucket_worm;
-#[cfg(feature = "async")]
-mod get_bucket_acl;
-#[cfg(feature = "async")]
-mod get_bucket_cors;
-#[cfg(feature = "async")]
-mod get_bucket_encryption;
-#[cfg(feature = "async")]
-mod get_bucket_info;
-#[cfg(feature = "async")]
-mod get_bucket_inventory;
-#[cfg(feature = "async")]
-mod get_bucket_lifecycle;
-#[cfg(feature = "async")]
-mod get_bucket_location;
-#[cfg(feature = "async")]
-mod get_bucket_logging;
-#[cfg(feature = "async")]
-mod get_bucket_policy;
-#[cfg(feature = "async")]
-mod get_bucket_referer;
-#[cfg(feature = "async")]
-mod get_bucket_request_payment;
-#[cfg(feature = "async")]
-mod get_bucket_stat;
-#[cfg(feature = "async")]
-mod get_bucket_tags;
-#[cfg(feature = "async")]
-mod get_bucket_transfer_acceleration;
-#[cfg(feature = "async")]
-mod get_bucket_versioning;
-#[cfg(feature = "async")]
-mod get_bucket_website;
-#[cfg(feature = "async")]
-mod get_bucket_worm;
-#[cfg(feature = "async")]
-mod initiate_bucket_worm;
-#[cfg(feature = "async")]
-mod list_bucket_inventory;
-#[cfg(feature = "async")]
-mod list_object_versions;
-#[cfg(feature = "async")]
-mod list_objects_v1;
-#[cfg(feature = "async")]
-mod list_multipart_uploads;
-#[cfg(feature = "async")]
-mod list_objects;
-mod oss_bucket;
-#[cfg(feature = "async")]
-mod put_bucket;
-#[cfg(feature = "async")]
-mod put_bucket_acl;
-#[cfg(feature = "async")]
-mod put_bucket_cors;
-#[cfg(feature = "async")]
-mod put_bucket_encryption;
-#[cfg(feature = "async")]
-mod put_bucket_inventory;
-#[cfg(feature = "async")]
-mod put_bucket_lifecycle;
-#[cfg(feature = "async")]
-mod put_bucket_logging;
-#[cfg(feature = "async")]
-mod put_bucket_policy;
-#[cfg(feature = "async")]
-mod put_bucket_referer;
-#[cfg(feature = "async")]
-mod put_bucket_request_payment;
-#[cfg(feature = "async")]
-mod put_bucket_tags;
-#[cfg(feature = "async")]
-mod put_bucket_transfer_acceleration;
-#[cfg(feature = "async")]
-mod put_bucket_versioning;
-#[cfg(feature = "async")]
-mod put_bucket_website;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod del_bucket_tags;
+#[cfg(feature = "_async-base")]
+mod del_bucket_website;
+#[cfg(feature = "_async-base")]
+mod del_objects;
+#[cfg(feature = "_async-base")]
+mod extend_bucket_worm;
+#[cfg(feature = "_async-base")]
+mod get_bucket_acl;
+#[cfg(feature = "_async-base")]
+mod get_bucket_cors;
+#[cfg(feature = "_async-base")]
+mod get_bucket_encryption;
+#[cfg(feature = "_async-base")]
+mod get_bucket_info;
+#[cfg(feature = "_async-base")]
+mod get_bucket_inventory;
+#[cfg(feature = "_async-base")]
+mod get_bucket_lifecycle;
+#[cfg(feature = "_async-base")]
+mod get_bucket_location;
+#[cfg(feature = "_async-base")]
+mod get_bucket_logging;
+#[cfg(feature = "_async-base")]
+mod get_bucket_policy;
+#[cfg(feature = "_async-base")]
+mod get_bucket_referer;
+#[cfg(feature = "_async-base")]
+mod get_bucket_request_payment;
+#[cfg(feature = "_async-base")]
+mod get_bucket_stat;
+#[cfg(feature = "_async-base")]
+mod get_bucket_tags;
+#[cfg(feature = "_async-base")]
+mod get_bucket_transfer_acceleration;
+#[cfg(feature = "_async-base")]
+mod get_bucket_versioning;
+#[cfg(feature = "_async-base")]
+mod get_bucket_website;
+#[cfg(feature = "_async-base")]
+mod get_bucket_worm;
+#[cfg(feature = "_async-base")]
+mod initiate_bucket_worm;
+#[cfg(feature = "_async-base")]
+mod list_bucket_inventory;
+#[cfg(feature = "_async-base")]
+mod list_multipart_uploads;
+#[cfg(feature = "_async-base")]
+mod list_object_versions;
+#[cfg(feature = "_async-base")]
+mod list_objects;
+#[cfg(feature = "_async-base")]
+mod list_objects_v1;
+mod oss_bucket;
+#[cfg(feature = "_async-base")]
+mod put_bucket;
+#[cfg(feature = "_async-base")]
+mod put_bucket_acl;
+#[cfg(feature = "_async-base")]
+mod put_bucket_cors;
+#[cfg(feature = "_async-base")]
+mod put_bucket_encryption;
+#[cfg(feature = "_async-base")]
+mod put_bucket_inventory;
+#[cfg(feature = "_async-base")]
+mod put_bucket_lifecycle;
+#[cfg(feature = "_async-base")]
+mod put_bucket_logging;
+#[cfg(feature = "_async-base")]
+mod put_bucket_policy;
+#[cfg(feature = "_async-base")]
+mod put_bucket_referer;
+#[cfg(feature = "_async-base")]
+mod put_bucket_request_payment;
+#[cfg(feature = "_async-base")]
+mod put_bucket_tags;
+#[cfg(feature = "_async-base")]
+mod put_bucket_transfer_acceleration;
+#[cfg(feature = "_async-base")]
+mod put_bucket_versioning;
+#[cfg(feature = "_async-base")]
+mod put_bucket_website;
 
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod abort_bucket_worm_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod complete_bucket_worm_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_bucket_cors_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_bucket_encryption_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_bucket_inventory_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_bucket_lifecycle_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_bucket_logging_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_bucket_policy_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_bucket_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_bucket_tags_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_bucket_website_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod del_objects_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod extend_bucket_worm_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_acl_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_cors_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_encryption_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_info_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_inventory_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_lifecycle_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_location_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_logging_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_policy_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_referer_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_request_payment_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_stat_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_tags_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_transfer_acceleration_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_versioning_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_website_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod get_bucket_worm_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod initiate_bucket_worm_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod list_bucket_inventory_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod list_multipart_uploads_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod list_object_versions_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod list_objects_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod list_objects_v1_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_acl_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_cors_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_encryption_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_inventory_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_lifecycle_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_logging_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_policy_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_referer_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_request_payment_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_tags_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_transfer_acceleration_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_versioning_sync;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 mod put_bucket_website_sync;
 
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 #[derive(Debug, Default, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(rename = "CORSConfiguration")]
@@ -324,7 +324,7 @@ pub(super) struct CorsConfiguration {
     pub(crate) rules: Vec<put_bucket_cors::CorsRule>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Default, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(rename = "RefererConfiguration")]
@@ -338,7 +338,7 @@ pub struct RefererConfiguration {
     pub referer_list: RefererList,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Default, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Referer list payload.
@@ -349,14 +349,14 @@ pub struct RefererList {
     pub items: Vec<String>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 impl RefererConfiguration {
     pub fn referers(&self) -> &[String] {
         &self.referer_list.items
     }
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Default, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(rename = "WebsiteConfiguration")]
@@ -372,7 +372,7 @@ pub struct WebsiteConfiguration {
     pub routing_rules: Option<RoutingRules>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Index document configuration.
@@ -383,7 +383,7 @@ pub struct IndexDocument {
     pub suffix: String,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Error document configuration.
@@ -394,7 +394,7 @@ pub struct ErrorDocument {
     pub key: String,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Default, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Routing rules payload.
@@ -405,7 +405,7 @@ pub struct RoutingRules {
     pub rules: Vec<RoutingRule>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Routing rule entry.
@@ -418,7 +418,7 @@ pub struct RoutingRule {
     pub redirect: RoutingRuleRedirect,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Routing rule condition.
@@ -427,14 +427,11 @@ pub struct RoutingRule {
 pub struct RoutingRuleCondition {
     #[serde(rename = "KeyPrefixEquals", skip_serializing_if = "Option::is_none")]
     pub key_prefix_equals: Option<String>,
-    #[serde(
-        rename = "HttpErrorCodeReturnedEquals",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "HttpErrorCodeReturnedEquals", skip_serializing_if = "Option::is_none")]
     pub http_error_code_returned_equals: Option<String>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Routing rule redirect action.
@@ -447,16 +444,13 @@ pub struct RoutingRuleRedirect {
     pub host_name: Option<String>,
     #[serde(rename = "ReplaceKeyWith", skip_serializing_if = "Option::is_none")]
     pub replace_key_with: Option<String>,
-    #[serde(
-        rename = "ReplaceKeyPrefixWith",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "ReplaceKeyPrefixWith", skip_serializing_if = "Option::is_none")]
     pub replace_key_prefix_with: Option<String>,
     #[serde(rename = "HttpRedirectCode", skip_serializing_if = "Option::is_none")]
     pub http_redirect_code: Option<String>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(rename = "ServerSideEncryptionConfiguration")]
@@ -468,7 +462,7 @@ pub struct BucketEncryption {
     pub rule: ServerSideEncryptionRule,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 impl Default for BucketEncryption {
     fn default() -> Self {
         BucketEncryption {
@@ -483,7 +477,7 @@ impl Default for BucketEncryption {
     }
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Server-side encryption rule.
@@ -494,7 +488,7 @@ pub struct ServerSideEncryptionRule {
     pub default_sse: ApplyServerSideEncryptionByDefault,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Default server-side encryption rule.
@@ -509,7 +503,7 @@ pub struct ApplyServerSideEncryptionByDefault {
     pub kms_data_encryption: Option<String>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(rename = "WormConfiguration")]
@@ -523,14 +517,11 @@ pub struct BucketWormConfiguration {
     pub state: Option<String>,
     #[serde(rename = "CreationDate", skip_serializing_if = "Option::is_none")]
     pub creation_date: Option<String>,
-    #[serde(
-        rename = "RetentionPeriodInDays",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "RetentionPeriodInDays", skip_serializing_if = "Option::is_none")]
     pub retention_period_in_days: Option<u32>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Default, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(rename = "VersioningConfiguration")]
@@ -542,7 +533,7 @@ pub struct VersioningConfiguration {
     pub status: VersioningStatus,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Versioning status.
@@ -553,14 +544,14 @@ pub enum VersioningStatus {
     Suspended,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 impl Default for VersioningStatus {
     fn default() -> Self {
         VersioningStatus::Suspended
     }
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Default, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(rename = "TransferAccelerationConfiguration")]
@@ -572,7 +563,7 @@ pub struct TransferAccelerationConfiguration {
     pub enabled: bool,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(rename = "RequestPaymentConfiguration")]
@@ -584,7 +575,7 @@ pub struct RequestPaymentConfiguration {
     pub payer: RequestPayer,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Request payer.
@@ -595,14 +586,14 @@ pub enum RequestPayer {
     BucketOwner,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 impl Default for RequestPayer {
     fn default() -> Self {
         RequestPayer::BucketOwner
     }
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Default, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(rename = "Tagging")]
@@ -614,7 +605,7 @@ pub struct BucketTagging {
     pub tag_set: TagSet,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Default, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Tag set payload.
@@ -625,7 +616,7 @@ pub struct TagSet {
     pub tags: Vec<Tag>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[derive(Debug, Clone, serde_derive::Serialize, serde_derive::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 /// Tag entry.
@@ -638,7 +629,7 @@ pub struct Tag {
     pub value: Option<String>,
 }
 
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 impl BucketTagging {
     pub fn tags(&self) -> &[Tag] {
         &self.tag_set.tags

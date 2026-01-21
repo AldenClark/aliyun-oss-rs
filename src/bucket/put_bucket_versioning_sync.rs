@@ -23,10 +23,7 @@ impl PutBucketVersioningSync {
     pub(super) fn new(oss: Oss) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("versioning", "");
-        PutBucketVersioningSync {
-            req,
-            config: VersioningConfiguration::default(),
-        }
+        PutBucketVersioningSync { req, config: VersioningConfiguration::default() }
     }
 
     /// Set the versioning status.

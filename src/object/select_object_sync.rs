@@ -24,10 +24,7 @@ impl SelectObjectSync {
         let mut req = OssRequest::new(oss, Method::POST);
         req.insert_query("select", "");
         req.insert_query("select-type", "2");
-        SelectObjectSync {
-            req,
-            request_xml: None,
-        }
+        SelectObjectSync { req, request_xml: None }
     }
 
     /// Provide the select request XML document.
@@ -73,10 +70,6 @@ impl SelectObjectSync {
         self.req.set_body(body.into_bytes());
         let response = self.req.send_to_oss()?;
         let status_code = response.status();
-        if status_code.is_success() {
-            Ok(response)
-        } else {
-            Err(normal_error_sync(response))
-        }
+        if status_code.is_success() { Ok(response) } else { Err(normal_error_sync(response)) }
     }
 }

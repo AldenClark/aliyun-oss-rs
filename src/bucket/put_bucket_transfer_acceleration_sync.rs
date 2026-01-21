@@ -23,10 +23,7 @@ impl PutBucketTransferAccelerationSync {
     pub(super) fn new(oss: Oss) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("transferAcceleration", "");
-        PutBucketTransferAccelerationSync {
-            req,
-            config: TransferAccelerationConfiguration::default(),
-        }
+        PutBucketTransferAccelerationSync { req, config: TransferAccelerationConfiguration::default() }
     }
 
     /// Enable or disable transfer acceleration.

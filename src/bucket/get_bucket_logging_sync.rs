@@ -52,8 +52,8 @@ impl GetBucketLoggingSync {
             let mut reader = response.into_body().into_reader();
             let mut buf = Vec::new();
             reader.read_to_end(&mut buf)?;
-            let status: BucketLoggingStatus = serde_xml_rs::from_reader(&*buf)
-                .map_err(|_| Error::OssInvalidResponse(Some(Bytes::from(buf))))?;
+            let status: BucketLoggingStatus =
+                serde_xml_rs::from_reader(&*buf).map_err(|_| Error::OssInvalidResponse(Some(Bytes::from(buf))))?;
             Ok(status.logging_enabled)
         } else {
             Err(normal_error_sync(response))

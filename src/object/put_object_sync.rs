@@ -1,7 +1,5 @@
 use crate::{
-    common::{
-        Acl, CacheControl, ContentDisposition, StorageClass, invalid_metadata_key, url_encode,
-    },
+    common::{Acl, CacheControl, ContentDisposition, StorageClass, invalid_metadata_key, url_encode},
     error::{Error, normal_error_sync},
     request_sync::{Oss, OssRequest},
 };
@@ -41,17 +39,8 @@ struct ProgressReader<R> {
 }
 
 impl<R: Read> ProgressReader<R> {
-    fn new(
-        inner: R,
-        total: u64,
-        callback: Option<Box<dyn Fn(u64, u64) + Send + Sync + 'static>>,
-    ) -> Self {
-        ProgressReader {
-            inner,
-            uploaded: 0,
-            total,
-            callback,
-        }
+    fn new(inner: R, total: u64, callback: Option<Box<dyn Fn(u64, u64) + Send + Sync + 'static>>) -> Self {
+        ProgressReader { inner, uploaded: 0, total, callback }
     }
 }
 
@@ -70,12 +59,7 @@ impl<R: Read> Read for ProgressReader<R> {
 
 impl PutObjectSync {
     pub(super) fn new(oss: Oss) -> Self {
-        PutObjectSync {
-            req: OssRequest::new(oss, Method::PUT),
-            mime: None,
-            tags: HashMap::new(),
-            callback: None,
-        }
+        PutObjectSync { req: OssRequest::new(oss, Method::PUT), mime: None, tags: HashMap::new(), callback: None }
     }
     /// Set the object's MIME type.
     ///
@@ -92,36 +76,28 @@ impl PutObjectSync {
     ///
     /// 设置对象 ACL。
     pub fn set_acl(mut self, acl: Acl) -> Self {
-        self.req
-            .insert_header("x-oss-object-acl", acl.to_string());
+        self.req.insert_header("x-oss-object-acl", acl.to_string());
         self
     }
     /// Set object storage class.
     ///
     /// 设置对象存储类型。
     pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
-        self.req.insert_header(
-            "x-oss-storage-class",
-            storage_class.to_string(),
-        );
+        self.req.insert_header("x-oss-storage-class", storage_class.to_string());
         self
     }
     /// Set response cache behavior when the object is downloaded.
     ///
     /// 设置对象下载时的缓存策略。
     pub fn set_cache_control(mut self, cache_control: CacheControl) -> Self {
-        self.req
-            .insert_header(header::CACHE_CONTROL.as_str(), cache_control.to_string());
+        self.req.insert_header(header::CACHE_CONTROL.as_str(), cache_control.to_string());
         self
     }
     /// Set content disposition for downloads.
     ///
     /// 设置下载时的内容呈现方式。
     pub fn set_content_disposition(mut self, content_disposition: ContentDisposition) -> Self {
-        self.req.insert_header(
-            header::CONTENT_DISPOSITION.as_str(),
-            content_disposition.to_string(),
-        );
+        self.req.insert_header(header::CONTENT_DISPOSITION.as_str(), content_disposition.to_string());
         self
     }
     /// Disallow overwriting existing objects with the same key.
@@ -141,8 +117,7 @@ impl PutObjectSync {
     pub fn set_meta(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         let key = key.into();
         if !invalid_metadata_key(&key) {
-            self.req
-                .insert_header(format!("x-oss-meta-{}", key), value.into());
+            self.req.insert_header(format!("x-oss-meta-{}", key), value.into());
         }
         self
     }
@@ -190,13 +165,7 @@ impl PutObjectSync {
             None => match infer::get_from_path(&file)? {
                 Some(ext) => ext.mime_type().to_owned(),
                 None => mime_guess::from_path(
-                    &self
-                        .req
-                        .oss
-                        .object
-                        .clone()
-                        .map(|v| v.to_string())
-                        .unwrap_or_else(|| String::new()),
+                    &self.req.oss.object.clone().map(|v| v.to_string()).unwrap_or_else(|| String::new()),
                 )
                 .first()
                 .map(|v| v.to_string())
@@ -204,8 +173,7 @@ impl PutObjectSync {
                 .to_string(),
             },
         };
-        self.req
-            .insert_header(header::CONTENT_TYPE.as_str(), file_type);
+        self.req.insert_header(header::CONTENT_TYPE.as_str(), file_type);
         let tags = self
             .tags
             .into_iter()
@@ -213,11 +181,7 @@ impl PutObjectSync {
                 if value.is_empty() {
                     url_encode(&key.to_string())
                 } else {
-                    format!(
-                        "{}={}",
-                        url_encode(&key.to_string()),
-                        url_encode(&value.to_string())
-                    )
+                    format!("{}={}", url_encode(&key.to_string()), url_encode(&value.to_string()))
                 }
             })
             .collect::<Vec<_>>()
@@ -230,8 +194,7 @@ impl PutObjectSync {
         if file_size >= 5_368_709_120 {
             return Err(Error::InvalidFileSize);
         }
-        self.req
-            .insert_header(header::CONTENT_LENGTH.as_str(), file_size.to_string());
+        self.req.insert_header(header::CONTENT_LENGTH.as_str(), file_size.to_string());
         let reader = BufReader::with_capacity(131072, file);
         let reader: Box<dyn Read> = match self.callback {
             Some(callback) => Box::new(ProgressReader::new(reader, file_size, Some(callback))),
@@ -254,12 +217,7 @@ impl PutObjectSync {
             None => match infer::get(&content) {
                 Some(ext) => ext.mime_type().to_string(),
                 None => mime_guess::from_path(
-                    self.req
-                        .oss
-                        .object
-                        .clone()
-                        .map(|v| v.to_string())
-                        .unwrap_or_else(|| String::new().into()),
+                    self.req.oss.object.clone().map(|v| v.to_string()).unwrap_or_else(|| String::new().into()),
                 )
                 .first()
                 .map(|v| v.to_string())
@@ -267,8 +225,7 @@ impl PutObjectSync {
                 .to_string(),
             },
         };
-        self.req
-            .insert_header(header::CONTENT_TYPE.as_str(), content_type);
+        self.req.insert_header(header::CONTENT_TYPE.as_str(), content_type);
         let tags = self
             .tags
             .into_iter()
@@ -276,11 +233,7 @@ impl PutObjectSync {
                 if value.is_empty() {
                     url_encode(&key.to_string())
                 } else {
-                    format!(
-                        "{}={}",
-                        url_encode(&key.to_string()),
-                        url_encode(&value.to_string())
-                    )
+                    format!("{}={}", url_encode(&key.to_string()), url_encode(&value.to_string()))
                 }
             })
             .collect::<Vec<_>>()
@@ -292,8 +245,7 @@ impl PutObjectSync {
         if content_size >= 5_368_709_120 {
             return Err(Error::InvalidFileSize);
         }
-        self.req
-            .insert_header(header::CONTENT_LENGTH.as_str(), content_size.to_string());
+        self.req.insert_header(header::CONTENT_LENGTH.as_str(), content_size.to_string());
         self.req.set_body(content);
         let response = self.req.send_to_oss()?;
         let status_code = response.status();

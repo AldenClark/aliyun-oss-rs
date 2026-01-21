@@ -28,10 +28,7 @@ impl SelectObject {
         let mut req = OssRequest::new(oss, Method::POST);
         req.insert_query("select", "");
         req.insert_query("select-type", "2");
-        SelectObject {
-            req,
-            request_xml: None,
-        }
+        SelectObject { req, request_xml: None }
     }
 
     /// Provide the select request XML document.
@@ -74,13 +71,10 @@ impl SelectObject {
         let status_code = response.status();
         match status_code {
             code if code.is_success() => {
-                let stream = response
-                    .into_body()
-                    .into_data_stream()
-                    .map(|item| match item {
-                        Ok(bytes) => Ok(bytes),
-                        Err(e) => Err(e.into()),
-                    });
+                let stream = response.into_body().into_data_stream().map(|item| match item {
+                    Ok(bytes) => Ok(bytes),
+                    Err(e) => Err(e.into()),
+                });
                 Ok(Box::pin(stream))
             }
             _ => Err(normal_error(response).await),
@@ -92,10 +86,6 @@ impl SelectObject {
         self.req.set_body(Full::new(Bytes::from(body)));
         let response = self.req.send_to_oss()?.await?;
         let status_code = response.status();
-        if status_code.is_success() {
-            Ok(response)
-        } else {
-            Err(normal_error(response).await)
-        }
+        if status_code.is_success() { Ok(response) } else { Err(normal_error(response).await) }
     }
 }

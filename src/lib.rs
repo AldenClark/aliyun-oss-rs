@@ -164,7 +164,19 @@ pub use crate::bucket::OssBucket;
 pub use crate::client::OssClient;
 #[doc(inline)]
 pub use crate::error::Error;
-#[cfg(any(feature = "async", feature = "sync"))]
+
+#[cfg(all(feature = "_async-base", not(any(feature = "async", feature = "async-native-tls"))))]
+compile_error!("Internal feature `_async-base` is not supported directly; enable `async` or `async-native-tls`.");
+
+#[cfg(all(feature = "_async-rustls", not(feature = "async")))]
+compile_error!("Internal feature `_async-rustls` is not supported directly; enable `async`.");
+
+#[cfg(all(feature = "_sync-base", not(any(feature = "sync", feature = "sync-native-tls"))))]
+compile_error!("Internal feature `_sync-base` is not supported directly; enable `sync` or `sync-native-tls`.");
+
+#[cfg(all(feature = "_sync-rustls", not(feature = "sync")))]
+compile_error!("Internal feature `_sync-rustls` is not supported directly; enable `sync`.");
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 #[doc(inline)]
 pub use crate::object::OssObject;
 
@@ -172,10 +184,10 @@ pub mod bucket;
 pub mod client;
 pub mod common;
 mod error;
-#[cfg(any(feature = "async", feature = "sync"))]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 pub mod object;
 mod oss;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 mod request;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 pub mod request_sync;

@@ -5,7 +5,8 @@
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-blue.svg)](LICENSE)
 
 `aliyun-oss-rs` is an unofficial Rust SDK for Alibaba Cloud Object Storage Service (OSS).
-It provides a small, chainable API surface. Async is enabled by default; a `sync` feature is available for selected APIs.
+It provides a small, chainable API surface. Async is enabled by default; `sync` enables synchronous variants for all APIs.
+Public features are limited to `async`, `sync`, `async-native-tls`, and `sync-native-tls`; any feature starting with `_` is internal and not stable.
 This SDK targets OSS Signature V4; `region` is required and drives the default endpoint selection.
 
 ## Install
@@ -13,14 +14,20 @@ This SDK targets OSS Signature V4; `region` is required and drives the default e
 Add the dependency in your `Cargo.toml`:
 
 ```toml
-# Async by default
-aliyun-oss-rs = { version = "0.2.0" }
+# Async (rustls) by default
+aliyun-oss-rs = { version = "0.3.0" }
 ```
 
 Enable synchronous APIs if needed:
 
 ```toml
-aliyun-oss-rs = { version = "0.2.0", features = ["sync"] }
+aliyun-oss-rs = { version = "0.3.0", features = ["sync"] }
+```
+
+Use native-tls if required:
+
+```toml
+aliyun-oss-rs = { version = "0.3.0", default-features = false, features = ["async-native-tls"] }
 ```
 
 ## Quick Start (Async)
@@ -249,7 +256,8 @@ Missing API categories:
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-blue.svg)](LICENSE)
 
 `aliyun-oss-rs` 是阿里云对象存储服务（OSS）的非官方 Rust SDK。
-提供精简、可链式调用的 API。默认启用异步；开启 `sync` feature 后可使用部分同步 API。
+提供精简、可链式调用的 API。默认启用异步；开启 `sync` 后可使用所有同步 API 变体。
+对外只提供 `async`、`sync`、`async-native-tls`、`sync-native-tls` 四个 feature，以下划线 `_` 开头的 feature 为内部使用且不保证稳定。
 本 SDK 使用 OSS Signature V4；必须提供 `region`，并由此推导默认 Endpoint。
 
 ## 安装
@@ -257,14 +265,20 @@ Missing API categories:
 在 `Cargo.toml` 中添加依赖：
 
 ```toml
-# 默认异步
-aliyun-oss-rs = { version = "0.2.0" }
+# 默认异步（rustls）
+aliyun-oss-rs = { version = "0.3.0" }
 ```
 
 需要同步 API 时启用特性：
 
 ```toml
-aliyun-oss-rs = { version = "0.2.0", features = ["sync"] }
+aliyun-oss-rs = { version = "0.3.0", features = ["sync"] }
+```
+
+需要 native-tls 时启用特性：
+
+```toml
+aliyun-oss-rs = { version = "0.3.0", default-features = false, features = ["async-native-tls"] }
 ```
 
 ## 快速开始（异步）

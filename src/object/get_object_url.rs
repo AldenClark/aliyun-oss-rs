@@ -22,9 +22,7 @@ pub struct GetObjectUrl {
 }
 impl GetObjectUrl {
     pub(super) fn new(oss: Oss) -> Self {
-        GetObjectUrl {
-            req: OssRequest::new(oss, Method::GET),
-        }
+        GetObjectUrl { req: OssRequest::new(oss, Method::GET) }
     }
     /// Restrict access by source IP.
     ///
@@ -34,10 +32,8 @@ impl GetObjectUrl {
     ///
     /// 若仅允许单个 IP，将 `subnet_mask` 设为 32。
     pub fn set_source_ip(mut self, source_ip: IpAddr, subnet_mask: u8) -> Self {
-        self.req
-            .insert_query("x-oss-ac-source-ip", source_ip.to_string());
-        self.req
-            .insert_query("x-oss-ac-subnet-mask", subnet_mask.to_string());
+        self.req.insert_query("x-oss-ac-source-ip", source_ip.to_string());
+        self.req.insert_query("x-oss-ac-subnet-mask", subnet_mask.to_string());
         self
     }
     /// Restrict access by VPC ID.
@@ -57,11 +53,7 @@ impl GetObjectUrl {
     /// Override the response `Content-Type`.
     ///
     /// 覆盖响应的 `Content-Type`。
-    pub fn set_response_mime(
-        mut self,
-        mime: impl Into<String>,
-        charset: Option<impl Into<String>>,
-    ) -> Self {
+    pub fn set_response_mime(mut self, mime: impl Into<String>, charset: Option<impl Into<String>>) -> Self {
         let mut mime_str = mime.into();
         if let Some(charset) = charset {
             mime_str.push_str(";charset=");
@@ -74,23 +66,14 @@ impl GetObjectUrl {
     ///
     /// 覆盖响应的 `Cache-Control`。
     pub fn set_response_cache_control(mut self, cache_control: CacheControl) -> Self {
-        self.req.insert_query(
-            "response-cache-control",
-            cache_control.to_string(),
-        );
+        self.req.insert_query("response-cache-control", cache_control.to_string());
         self
     }
     /// Override the response `Content-Disposition`.
     ///
     /// 覆盖响应的 `Content-Disposition`。
-    pub fn set_response_content_disposition(
-        mut self,
-        content_disposition: ContentDisposition,
-    ) -> Self {
-        self.req.insert_query(
-            "response-content-disposition",
-            content_disposition.to_string(),
-        );
+    pub fn set_response_content_disposition(mut self, content_disposition: ContentDisposition) -> Self {
+        self.req.insert_query("response-content-disposition", content_disposition.to_string());
         self
     }
     /// Bind a custom domain and choose whether to use HTTPS.

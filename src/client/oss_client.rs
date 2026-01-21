@@ -1,6 +1,6 @@
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 use super::{DescribeRegions, ListBuckets};
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 use super::{DescribeRegionsSync, ListBucketsSync};
 use crate::{OssBucket, oss::Oss};
 
@@ -24,14 +24,8 @@ impl OssClient {
     /// `ak_id` 为 AccessKey ID，`ak_secret` 为 AccessKey Secret。
     ///
     /// `region` 为 Signature V4 必填（例如 `cn-hangzhou`）。
-    pub fn new(
-        ak_id: impl Into<String>,
-        ak_secret: impl Into<String>,
-        region: impl Into<String>,
-    ) -> Self {
-        OssClient {
-            oss: Oss::new(ak_id, ak_secret, region),
-        }
+    pub fn new(ak_id: impl Into<String>, ak_secret: impl Into<String>, region: impl Into<String>) -> Self {
+        OssClient { oss: Oss::new(ak_id, ak_secret, region) }
     }
     /// Disable HTTPS and use HTTP for all requests.
     ///
@@ -68,28 +62,28 @@ impl OssClient {
     /// List OSS regions and their endpoints.
     ///
     /// 列举 OSS 支持的地域与对应的 Endpoint。
-    #[cfg(feature = "async")]
+    #[cfg(feature = "_async-base")]
     pub fn describe_regions(&self) -> DescribeRegions {
         DescribeRegions::new(self.oss.clone())
     }
     /// List OSS regions and their endpoints (sync).
     ///
     /// 列举 OSS 支持的地域与对应的 Endpoint（同步）。
-    #[cfg(feature = "sync")]
+    #[cfg(feature = "_sync-base")]
     pub fn describe_regions_sync(&self) -> DescribeRegionsSync {
         DescribeRegionsSync::new(self.oss.clone())
     }
     /// List all buckets owned by the current account.
     ///
     /// 列举当前账号拥有的所有 Bucket。
-    #[cfg(feature = "async")]
+    #[cfg(feature = "_async-base")]
     pub fn list_buckets(&self) -> ListBuckets {
         ListBuckets::new(self.oss.clone())
     }
     /// List all buckets owned by the current account (sync).
     ///
     /// 列举当前账号拥有的所有 Bucket（同步）。
-    #[cfg(feature = "sync")]
+    #[cfg(feature = "_sync-base")]
     pub fn list_buckets_sync(&self) -> ListBucketsSync {
         ListBucketsSync::new(self.oss.clone())
     }

@@ -1,8 +1,6 @@
 use crate::common::body_to_bytes_sync;
 use crate::{
-    common::{
-        Acl, CacheControl, ContentDisposition, StorageClass, invalid_metadata_key, url_encode,
-    },
+    common::{Acl, CacheControl, ContentDisposition, StorageClass, invalid_metadata_key, url_encode},
     error::{Error, normal_error_sync},
     request_sync::{Oss, OssRequest},
 };
@@ -32,10 +30,7 @@ impl InitUploadSync {
     pub(super) fn new(oss: Oss) -> Self {
         let mut req = OssRequest::new(oss, Method::POST);
         req.insert_query("uploads", "");
-        InitUploadSync {
-            req,
-            tags: HashMap::new(),
-        }
+        InitUploadSync { req, tags: HashMap::new() }
     }
     /// Set the object's MIME type.
     ///
@@ -45,44 +40,35 @@ impl InitUploadSync {
     ///
     /// 未设置时默认使用 `application/octet-stream`。
     pub fn set_mime(mut self, mime: impl Into<String>) -> Self {
-        self.req
-            .insert_header(header::CONTENT_TYPE.as_str(), mime.into());
+        self.req.insert_header(header::CONTENT_TYPE.as_str(), mime.into());
         self
     }
     /// Set object ACL.
     ///
     /// 设置对象 ACL。
     pub fn set_acl(mut self, acl: Acl) -> Self {
-        self.req
-            .insert_header("x-oss-object-acl", acl.to_string());
+        self.req.insert_header("x-oss-object-acl", acl.to_string());
         self
     }
     /// Set object storage class.
     ///
     /// 设置对象存储类型。
     pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
-        self.req.insert_header(
-            "x-oss-storage-class",
-            storage_class.to_string(),
-        );
+        self.req.insert_header("x-oss-storage-class", storage_class.to_string());
         self
     }
     /// Set cache-control behavior when the object is downloaded.
     ///
     /// 设置对象下载时的缓存策略。
     pub fn set_cache_control(mut self, cache_control: CacheControl) -> Self {
-        self.req
-            .insert_header(header::CACHE_CONTROL.as_str(), cache_control.to_string());
+        self.req.insert_header(header::CACHE_CONTROL.as_str(), cache_control.to_string());
         self
     }
     /// Set content disposition for downloads.
     ///
     /// 设置下载时的内容呈现方式。
     pub fn set_content_disposition(mut self, content_disposition: ContentDisposition) -> Self {
-        self.req.insert_header(
-            header::CONTENT_DISPOSITION.as_str(),
-            content_disposition.to_string(),
-        );
+        self.req.insert_header(header::CONTENT_DISPOSITION.as_str(), content_disposition.to_string());
         self
     }
     /// Disallow overwriting objects with the same key.
@@ -102,8 +88,7 @@ impl InitUploadSync {
     pub fn set_meta(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         let key = key.into();
         if !invalid_metadata_key(&key) {
-            self.req
-                .insert_header(format!("x-oss-meta-{}", key), value.into());
+            self.req.insert_header(format!("x-oss-meta-{}", key), value.into());
         }
         self
     }
@@ -126,11 +111,7 @@ impl InitUploadSync {
                 if value.is_empty() {
                     url_encode(&key.to_string())
                 } else {
-                    format!(
-                        "{}={}",
-                        url_encode(&key.to_string()),
-                        url_encode(&value.to_string())
-                    )
+                    format!("{}={}", url_encode(&key.to_string()), url_encode(&value.to_string()))
                 }
             })
             .collect::<Vec<_>>()
@@ -144,11 +125,10 @@ impl InitUploadSync {
         let status_code = response.status();
         match status_code {
             code if code.is_success() => {
-                let response_bytes = body_to_bytes_sync(response.into_body())
-                    .map_err(|_| Error::OssInvalidResponse(None))?;
-                let result: InitiateMultipartUploadResult =
-                    serde_xml_rs::from_reader(&*response_bytes)
-                        .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
+                let response_bytes =
+                    body_to_bytes_sync(response.into_body()).map_err(|_| Error::OssInvalidResponse(None))?;
+                let result: InitiateMultipartUploadResult = serde_xml_rs::from_reader(&*response_bytes)
+                    .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
                 Ok(result.upload_id)
             }
             _ => Err(normal_error_sync(response)),

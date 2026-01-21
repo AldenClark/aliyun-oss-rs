@@ -22,11 +22,7 @@ impl RestoreObjectSync {
     pub(super) fn new(oss: Oss) -> Self {
         let mut req = OssRequest::new(oss, Method::POST);
         req.insert_query("restore", "");
-        RestoreObjectSync {
-            req,
-            days: None,
-            tier: None,
-        }
+        RestoreObjectSync { req, days: None, tier: None }
     }
     /// Set the number of days to keep the restored copy.
     ///
@@ -47,10 +43,7 @@ impl RestoreObjectSync {
     /// 发送请求。
     pub fn send(mut self) -> Result<(), Error> {
         // Build the body
-        let days_str = self
-            .days
-            .map(|v| format!("<Days>{}</Days>", v))
-            .unwrap_or_else(|| String::new());
+        let days_str = self.days.map(|v| format!("<Days>{}</Days>", v)).unwrap_or_else(|| String::new());
         let tier_str = self
             .tier
             .map(|v| format!("<JobParameters><Tier>{}</Tier></JobParameters>", v))

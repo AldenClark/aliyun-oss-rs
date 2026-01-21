@@ -43,8 +43,8 @@ impl GetBucketCorsSync {
         let status_code = response.status();
         match status_code {
             code if code.is_success() => {
-                let response_bytes = body_to_bytes_sync(response.into_body())
-                    .map_err(|_| Error::OssInvalidResponse(None))?;
+                let response_bytes =
+                    body_to_bytes_sync(response.into_body()).map_err(|_| Error::OssInvalidResponse(None))?;
                 let cors: CorsConfiguration = serde_xml_rs::from_reader(&*response_bytes)
                     .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
                 Ok(cors.rules)

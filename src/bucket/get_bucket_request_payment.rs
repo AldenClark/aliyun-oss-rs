@@ -34,8 +34,8 @@ impl GetBucketRequestPayment {
         match response.status() {
             code if code.is_success() => {
                 let bytes = body_to_bytes(response.into_body()).await?;
-                let config: RequestPaymentConfiguration = serde_xml_rs::from_reader(bytes.as_ref())
-                    .map_err(|_| Error::OssInvalidResponse(Some(bytes)))?;
+                let config: RequestPaymentConfiguration =
+                    serde_xml_rs::from_reader(bytes.as_ref()).map_err(|_| Error::OssInvalidResponse(Some(bytes)))?;
                 Ok(config)
             }
             _ => Err(normal_error(response).await),

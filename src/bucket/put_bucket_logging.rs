@@ -18,11 +18,7 @@ pub struct PutBucketLogging {
     req: OssRequest,
 }
 impl PutBucketLogging {
-    pub(super) fn new(
-        oss: Oss,
-        target_bucket: impl Into<String>,
-        target_prefix: impl Into<String>,
-    ) -> Self {
+    pub(super) fn new(oss: Oss, target_bucket: impl Into<String>, target_prefix: impl Into<String>) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("logging", "");
         let body = format!(

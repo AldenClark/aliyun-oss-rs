@@ -25,9 +25,7 @@ pub struct DelObject {
 }
 impl DelObject {
     pub(super) fn new(oss: Oss) -> Self {
-        DelObject {
-            req: OssRequest::new(oss, Method::DELETE),
-        }
+        DelObject { req: OssRequest::new(oss, Method::DELETE) }
     }
     /// Send the delete request.
     ///

@@ -132,8 +132,7 @@ impl ListObjectsSync {
     ///
     /// Token 来源于 `NextContinuationToken`。
     pub fn set_continuation_token(mut self, continuation_token: impl Into<String>) -> Self {
-        self.req
-            .insert_query("continuation-token", continuation_token.into());
+        self.req.insert_query("continuation-token", continuation_token.into());
         self
     }
     /// Restrict results to keys with the given prefix.
@@ -156,8 +155,7 @@ impl ListObjectsSync {
     /// 默认 1000，合法范围 1-1000。
     pub fn set_max_keys(mut self, max_keys: u32) -> Self {
         let max_keys = cmp::min(1000, cmp::max(1, max_keys));
-        self.req
-            .insert_query("max-keys", max_keys.to_string());
+        self.req.insert_query("max-keys", max_keys.to_string());
         self
     }
     /// Include owner information in results.
@@ -177,9 +175,8 @@ impl ListObjectsSync {
         let status_code = response.status();
         match status_code {
             code if code.is_success() => {
-                let response_bytes = body_to_bytes_sync(response.into_body())
-                    
-                    .map_err(|_| Error::OssInvalidResponse(None))?;
+                let response_bytes =
+                    body_to_bytes_sync(response.into_body()).map_err(|_| Error::OssInvalidResponse(None))?;
                 let object_list: ObjectsList = serde_xml_rs::from_reader(&*response_bytes)
                     .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
                 Ok(object_list)

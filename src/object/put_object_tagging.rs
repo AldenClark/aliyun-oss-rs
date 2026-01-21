@@ -22,20 +22,13 @@ impl PutObjectTagging {
     pub(super) fn new(oss: Oss, tags: Vec<(impl Into<String>, impl Into<String>)>) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("tagging", "");
-        PutObjectTagging {
-            req,
-            tags: tags
-                .into_iter()
-                .map(|(key, value)| (key.into(), value.into()))
-                .collect(),
-        }
+        PutObjectTagging { req, tags: tags.into_iter().map(|(key, value)| (key.into(), value.into())).collect() }
     }
     /// Add tags.
     ///
     /// 追加标签。
     pub fn add_tags(mut self, tags: Vec<(impl Into<String>, impl Into<String>)>) -> Self {
-        self.tags
-            .extend(tags.into_iter().map(|(key, value)| (key.into(), value.into())));
+        self.tags.extend(tags.into_iter().map(|(key, value)| (key.into(), value.into())));
         self
     }
     /// Send the request.
@@ -56,8 +49,7 @@ impl PutObjectTagging {
             .collect::<Vec<_>>()
             .join("");
         let body = format!("<Tagging><TagSet>{}</TagSet></Tagging>", tag_str);
-        self.req
-            .insert_header("Content-Length", body.len().to_string());
+        self.req.insert_header("Content-Length", body.len().to_string());
         self.req.set_body(Full::new(Bytes::from(body)));
         // Build the HTTP request
         let response = self.req.send_to_oss()?.await?;

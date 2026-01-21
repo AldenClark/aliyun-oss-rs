@@ -114,8 +114,7 @@ impl ListUploadsSync {
     ///
     /// 设置 upload-id-marker。
     pub fn set_upload_id_marker(mut self, upload_id_marker: impl Into<String>) -> Self {
-        self.req
-            .insert_query("upload-id-marker", upload_id_marker.into());
+        self.req.insert_query("upload-id-marker", upload_id_marker.into());
         self
     }
     /// Limit the maximum number of uploads returned.
@@ -131,8 +130,7 @@ impl ListUploadsSync {
     /// 默认 1000，合法范围 1-1000。
     pub fn set_max_uploads(mut self, max_keys: u32) -> Self {
         let max_keys = cmp::min(1000, cmp::max(1, max_keys));
-        self.req
-            .insert_query("max-uploads", max_keys.to_string());
+        self.req.insert_query("max-uploads", max_keys.to_string());
         self
     }
     /// Send the request and return results.
@@ -145,12 +143,10 @@ impl ListUploadsSync {
         let status_code = response.status();
         match status_code {
             code if code.is_success() => {
-                let response_bytes = body_to_bytes_sync(response.into_body())
-                    
-                    .map_err(|_| Error::OssInvalidResponse(None))?;
-                let result: ListMultipartUploadsResult =
-                    serde_xml_rs::from_reader(&*response_bytes)
-                        .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
+                let response_bytes =
+                    body_to_bytes_sync(response.into_body()).map_err(|_| Error::OssInvalidResponse(None))?;
+                let result: ListMultipartUploadsResult = serde_xml_rs::from_reader(&*response_bytes)
+                    .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
                 Ok(result)
             }
             _ => Err(normal_error_sync(response)),

@@ -27,18 +27,14 @@ impl PutSymlinkSync {
     ///
     /// 设置对象 ACL。
     pub fn set_acl(mut self, acl: Acl) -> Self {
-        self.req
-            .insert_header("x-oss-object-acl", acl.to_string());
+        self.req.insert_header("x-oss-object-acl", acl.to_string());
         self
     }
     /// Set object storage class.
     ///
     /// 设置对象存储类型。
     pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
-        self.req.insert_header(
-            "x-oss-storage-class",
-            storage_class.to_string(),
-        );
+        self.req.insert_header("x-oss-storage-class", storage_class.to_string());
         self
     }
     /// Disallow overwriting objects with the same key.

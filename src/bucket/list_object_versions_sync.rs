@@ -112,8 +112,7 @@ impl ListObjectVersionsSync {
     ///
     /// 设置分页的 version ID marker。
     pub fn set_version_id_marker(mut self, version_id_marker: impl Into<String>) -> Self {
-        self.req
-            .insert_query("version-id-marker", version_id_marker.into());
+        self.req.insert_query("version-id-marker", version_id_marker.into());
         self
     }
 
@@ -122,8 +121,7 @@ impl ListObjectVersionsSync {
     /// 设置返回条目上限。
     pub fn set_max_keys(mut self, max_keys: u32) -> Self {
         let max_keys = cmp::min(1000, cmp::max(1, max_keys));
-        self.req
-            .insert_query("max-keys", max_keys.to_string());
+        self.req.insert_query("max-keys", max_keys.to_string());
         self
     }
 
@@ -134,12 +132,10 @@ impl ListObjectVersionsSync {
         let response = self.req.send_to_oss()?;
         match response.status() {
             code if code.is_success() => {
-                let response_bytes = body_to_bytes_sync(response.into_body())
-                    
-                    .map_err(|_| Error::OssInvalidResponse(None))?;
-                let result: ListObjectVersionsResult =
-                    serde_xml_rs::from_reader(response_bytes.as_ref())
-                        .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
+                let response_bytes =
+                    body_to_bytes_sync(response.into_body()).map_err(|_| Error::OssInvalidResponse(None))?;
+                let result: ListObjectVersionsResult = serde_xml_rs::from_reader(response_bytes.as_ref())
+                    .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
                 Ok(result)
             }
             _ => Err(normal_error_sync(response)),

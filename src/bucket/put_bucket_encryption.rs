@@ -25,10 +25,7 @@ impl PutBucketEncryption {
     pub(super) fn new(oss: Oss) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("encryption", "");
-        PutBucketEncryption {
-            req,
-            encryption: BucketEncryption::default(),
-        }
+        PutBucketEncryption { req, encryption: BucketEncryption::default() }
     }
 
     /// Set the encryption algorithm (e.g., `AES256`, `KMS`).
@@ -59,8 +56,7 @@ impl PutBucketEncryption {
     ///
     /// 发送请求。
     pub async fn send(mut self) -> Result<(), Error> {
-        let body =
-            serde_xml_rs::to_string(&self.encryption).map_err(|_| Error::InvalidCharacter)?;
+        let body = serde_xml_rs::to_string(&self.encryption).map_err(|_| Error::InvalidCharacter)?;
         self.req.set_body(Full::new(Bytes::from(body)));
         let response = self.req.send_to_oss()?.await?;
         match response.status() {

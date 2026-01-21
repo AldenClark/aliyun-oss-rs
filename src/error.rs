@@ -1,16 +1,16 @@
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 use crate::common::body_to_bytes;
 use bytes::Bytes;
 use http::StatusCode;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 use hyper::{Response, body::Incoming};
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 use hyper_util::client::legacy::Error as HyperClientError;
 use serde_derive::Deserialize;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 use std::io::Read;
 use thiserror::Error;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 use ureq::{self, Body};
 
 /// Error type for OSS operations.
@@ -38,19 +38,19 @@ pub enum Error {
     /// 构建请求时的 HTTP 错误。
     #[error("{0}")]
     HttpError(#[from] http::Error),
-    #[cfg(feature = "async")]
+    #[cfg(feature = "_async-base")]
     /// Hyper error (async).
     ///
     /// Hyper 错误（异步）。
     #[error("{0}")]
     HyperError(#[from] hyper::Error),
-    #[cfg(feature = "async")]
+    #[cfg(feature = "_async-base")]
     /// Hyper client error (async).
     ///
     /// Hyper 客户端错误（异步）。
     #[error("{0}")]
     HyperClientError(#[from] HyperClientError),
-    #[cfg(feature = "sync")]
+    #[cfg(feature = "_sync-base")]
     /// Ureq error (sync).
     ///
     /// Ureq 错误（同步）。
@@ -111,7 +111,7 @@ pub struct OssError {
     pub ec: String,
 }
 
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 /// Convert an async OSS response into an `Error`.
 ///
 /// 将异步 OSS 响应转换为 `Error`。
@@ -130,7 +130,7 @@ pub async fn normal_error(response: Response<Incoming>) -> Error {
     }
 }
 
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 /// Convert a sync OSS response into an `Error`.
 ///
 /// 将同步 OSS 响应转换为 `Error`。

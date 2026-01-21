@@ -1,24 +1,28 @@
 [package]
 name = "aliyun-oss-rs"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
-authors = ["Ethan Archer"]
+authors = ["Alden Clark"]
 license = "0BSD"
 readme = "README.md"
 repository = "https://github.com/AldenClark/aliyun-oss-rs"
 description = "A non-official Rust SDK implementation for Alibaba Cloud OSS."
 
 [dependencies]
+aws-lc-rs = "^1.15.3"
 base64 = "^0.22.1"
 bytes = "^1.11.0"
 time = { version = "^0.3.45", features = ["formatting", "parsing"] }
 futures-util = { version = "^0.3.31", default-features = false, optional = true }
 hyper = { version = "^1.8.1", features = ["http1", "client"], optional = true }
 hyper-tls = { version = "^0.6.0", optional = true }
-http = "^1.4.0"
-ureq = { version = "^3.1.4", default-features = false, features = [
-    "native-tls",
+hyper-rustls = { version = "^0.27.0", default-features = false, features = [
+    "aws-lc-rs",
+    "http1",
+    "webpki-tokio",
 ], optional = true }
+http = "^1.4.0"
+ureq = { version = "^3.1.4", default-features = false, optional = true }
 hyper-util = { version = "^0.1.19", features = [
     "client-legacy",
     "http1",
@@ -28,7 +32,12 @@ http-body = { version = "^1.0.1", optional = true }
 infer = "^0.19.0"
 mime_guess = "^2.0.5"
 percent-encoding = "^2.3.2"
-ring = "^0.17.14"
+rustls = { version = "^0.23.22", default-features = false, features = [
+    "aws_lc_rs",
+    "logging",
+    "std",
+    "tls12",
+], optional = true }
 serde = "^1.0.228"
 serde-xml-rs = "^0.8.2"
 serde_derive = "^1.0.228"
@@ -43,14 +52,19 @@ md-5 = "^0.11.0-rc.3"
 
 [features]
 default = ["async"]
-async = [
+_async-base = [
     "tokio",
     "tokio-util",
     "hyper",
-    "hyper-tls",
     "hyper-util",
     "http-body-util",
     "http-body",
     "futures-util",
 ]
-sync = ["ureq"]
+_sync-base = ["ureq"]
+_async-rustls = ["_async-base", "hyper-rustls"]
+async-native-tls = ["_async-base", "hyper-tls"]
+_sync-rustls = ["_sync-base", "ureq/rustls-no-provider", "dep:rustls"]
+sync-native-tls = ["_sync-base", "ureq/native-tls"]
+async = ["_async-rustls"]
+sync = ["_sync-rustls"]

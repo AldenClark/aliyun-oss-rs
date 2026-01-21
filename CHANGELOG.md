@@ -4,6 +4,20 @@ This project follows Semantic Versioning (SemVer). `0.1.0` is the first usable r
 
 本项目遵循语义化版本（SemVer），`0.1.0` 为第一个可用版本。
 
+## 0.3.0 - 2026-01-21
+
+- Fixed GMT date day padding in conditional headers (e.g. `01` instead of `1`).
+- Switched request signing crypto to aws-lc-rs (ring-compatible API) to align with rustls defaults.
+- Restructured TLS features: default async rustls, explicit async/sync native-tls options.
+- Feature flags are now limited to `async`, `sync`, `async-native-tls`, and `sync-native-tls` (internal features are prefixed with `_`).
+- Added a stable rustfmt configuration tuned for wider screens.
+
+- 修复条件请求头中的 GMT 日期“日”补零（例如 `01` 而不是 `1`）。
+- 请求签名改用 aws-lc-rs（ring 兼容 API），与 rustls 默认后端对齐。
+- 重构 TLS feature：默认 async rustls，另提供 async/sync native-tls 选项。
+- 对外 feature 仅保留 `async`、`sync`、`async-native-tls`、`sync-native-tls`（以下划线 `_` 开头的为内部 feature）。
+- 新增稳定版 rustfmt 配置，适配宽屏阅读。
+
 ## 0.2.0 - 2026-01-20
 
 - Added bucket APIs for versioning, transfer acceleration, requester pays, bucket tags, list object versions, and ListObjects (v1).

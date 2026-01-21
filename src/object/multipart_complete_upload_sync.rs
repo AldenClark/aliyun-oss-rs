@@ -19,10 +19,7 @@ impl<'a> CompleteUploadSync<'a> {
     pub(super) fn new(oss: Oss, upload_id: impl Into<String>) -> Self {
         let mut req = OssRequest::new(oss, Method::POST);
         req.insert_query("uploadId", upload_id.into());
-        CompleteUploadSync {
-            req,
-            parts: Vec::new(),
-        }
+        CompleteUploadSync { req, parts: Vec::new() }
     }
     /// Add part information in `(PartNumber, ETag)` pairs.
     ///
@@ -49,8 +46,7 @@ impl<'a> CompleteUploadSync<'a> {
         );
         let body_len = body.len();
         self.req.set_body(body.into_bytes());
-        self.req
-            .insert_header("Content-Length", body_len.to_string());
+        self.req.insert_header("Content-Length", body_len.to_string());
         // Upload file
         let response = self.req.send_to_oss()?;
         // Parse the response

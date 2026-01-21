@@ -11,11 +11,7 @@ pub struct PutBucketLoggingSync {
     req: OssRequest,
 }
 impl PutBucketLoggingSync {
-    pub(crate) fn new(
-        oss: Oss,
-        target_bucket: impl Into<String>,
-        target_prefix: impl Into<String>,
-    ) -> Self {
+    pub(crate) fn new(oss: Oss, target_bucket: impl Into<String>, target_prefix: impl Into<String>) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("logging", "");
         let body = format!(
@@ -32,10 +28,6 @@ impl PutBucketLoggingSync {
     pub fn send(self) -> Result<(), Error> {
         let response = self.req.send_to_oss()?;
         let status = response.status();
-        if status.is_success() {
-            Ok(())
-        } else {
-            Err(normal_error_sync(response))
-        }
+        if status.is_success() { Ok(()) } else { Err(normal_error_sync(response)) }
     }
 }

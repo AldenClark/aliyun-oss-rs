@@ -24,11 +24,7 @@ pub struct PutBucketSync {
 }
 impl PutBucketSync {
     pub(super) fn new(oss: Oss) -> Self {
-        PutBucketSync {
-            req: OssRequest::new(oss, Method::PUT),
-            storage_class: None,
-            data_redundancy_type: None,
-        }
+        PutBucketSync { req: OssRequest::new(oss, Method::PUT), storage_class: None, data_redundancy_type: None }
     }
     /// Set bucket ACL.
     ///
@@ -49,8 +45,7 @@ impl PutBucketSync {
     ///
     /// 省略则创建在默认资源组。
     pub fn set_group_id(mut self, group_id: impl Into<String>) -> Self {
-        self.req
-            .insert_header("x-oss-resource-group-id", group_id.into());
+        self.req.insert_header("x-oss-resource-group-id", group_id.into());
         self
     }
     /// Set bucket storage class.
@@ -62,8 +57,7 @@ impl PutBucketSync {
     /// `Archive` 不支持与 `DataRedundancyType::ZRS` 组合。
     pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
         self.storage_class = Some(storage_class);
-        self.data_redundancy_type =
-            normalize_redundancy(self.storage_class, self.data_redundancy_type);
+        self.data_redundancy_type = normalize_redundancy(self.storage_class, self.data_redundancy_type);
         let body_str = build_create_bucket_body(self.storage_class, self.data_redundancy_type);
         self.req.set_body(body_str.into_bytes());
         self
@@ -77,8 +71,7 @@ impl PutBucketSync {
     /// `Archive` 不支持 `DataRedundancyType::ZRS`。
     pub fn set_redundancy_type(mut self, redundancy_type: DataRedundancyType) -> Self {
         self.data_redundancy_type = Some(redundancy_type);
-        self.data_redundancy_type =
-            normalize_redundancy(self.storage_class, self.data_redundancy_type);
+        self.data_redundancy_type = normalize_redundancy(self.storage_class, self.data_redundancy_type);
         let body_str = build_create_bucket_body(self.storage_class, self.data_redundancy_type);
         self.req.set_body(body_str.into_bytes());
         self
@@ -109,10 +102,7 @@ fn normalize_redundancy(
     }
 }
 
-fn build_create_bucket_body(
-    storage_class: Option<StorageClass>,
-    redundancy: Option<DataRedundancyType>,
-) -> String {
+fn build_create_bucket_body(storage_class: Option<StorageClass>, redundancy: Option<DataRedundancyType>) -> String {
     let mut body = String::with_capacity(192);
     body.push_str("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
     body.push_str("<CreateBucketConfiguration>");

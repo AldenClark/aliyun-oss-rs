@@ -104,9 +104,7 @@ pub struct ListBucketsSync {
 
 impl ListBucketsSync {
     pub(super) fn new(oss: Oss) -> Self {
-        ListBucketsSync {
-            req: OssRequest::new(oss, Method::GET),
-        }
+        ListBucketsSync { req: OssRequest::new(oss, Method::GET) }
     }
 
     /// Limit bucket names to those starting with the given prefix.
@@ -135,16 +133,14 @@ impl ListBucketsSync {
     ///
     /// 设置返回 Bucket 的最大数量（1-1000，默认 100）。
     pub fn set_max_keys(mut self, max_keys: u32) -> Self {
-        self.req
-            .insert_query("max-keys", max_keys.to_string());
+        self.req.insert_query("max-keys", max_keys.to_string());
         self
     }
     /// Specify the resource group ID.
     ///
     /// 指定资源组 ID。
     pub fn set_group_id(mut self, group_id: impl Into<String>) -> Self {
-        self.req
-            .insert_header("x-oss-resource-group-id", group_id.into());
+        self.req.insert_header("x-oss-resource-group-id", group_id.into());
         self
     }
     /// Set the endpoint used for this query; it does not limit the bucket regions.
@@ -168,15 +164,11 @@ impl ListBucketsSync {
         let status_code = response.status();
         match status_code {
             code if code.is_success() => {
-                let response_bytes = body_to_bytes_sync(response.into_body())
-                    
-                    .map_err(|_| Error::OssInvalidResponse(None))?;
+                let response_bytes =
+                    body_to_bytes_sync(response.into_body()).map_err(|_| Error::OssInvalidResponse(None))?;
                 let result: ListAllMyBucketsResult = serde_xml_rs::from_reader(&*response_bytes)
                     .map_err(|_| Error::OssInvalidResponse(Some(response_bytes)))?;
-                Ok(ListAllMyBuckets {
-                    next_marker: result.next_marker,
-                    buckets: result.buckets.bucket,
-                })
+                Ok(ListAllMyBuckets { next_marker: result.next_marker, buckets: result.buckets.bucket })
             }
             _ => Err(normal_error_sync(response)),
         }

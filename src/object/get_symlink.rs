@@ -37,9 +37,8 @@ impl GetSymlink {
                     .get("x-oss-symlink-target")
                     .map(|v| v.as_bytes())
                     .unwrap_or_else(|| "".as_bytes());
-                let target_decode = percent_decode(target)
-                    .decode_utf8()
-                    .map_err(|_| Error::OssInvalidResponse(None))?;
+                let target_decode =
+                    percent_decode(target).decode_utf8().map_err(|_| Error::OssInvalidResponse(None))?;
                 Ok(target_decode.into_owned())
             }
             _ => Err(normal_error(response).await),

@@ -30,10 +30,6 @@ impl PutBucketAclSync {
     pub fn send(self) -> Result<(), Error> {
         let response = self.req.send_to_oss()?;
         let status = response.status();
-        if status.is_success() {
-            Ok(())
-        } else {
-            Err(normal_error_sync(response))
-        }
+        if status.is_success() { Ok(()) } else { Err(normal_error_sync(response)) }
     }
 }

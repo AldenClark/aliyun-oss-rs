@@ -21,9 +21,7 @@ pub struct DelBucketSync {
 }
 impl DelBucketSync {
     pub(super) fn new(oss: Oss) -> Self {
-        DelBucketSync {
-            req: OssRequest::new(oss, Method::DELETE),
-        }
+        DelBucketSync { req: OssRequest::new(oss, Method::DELETE) }
     }
 
     /// Send the request.

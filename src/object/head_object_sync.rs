@@ -21,24 +21,20 @@ pub struct HeadObjectSync {
 }
 impl HeadObjectSync {
     pub(super) fn new(oss: Oss) -> Self {
-        HeadObjectSync {
-            req: OssRequest::new(oss, Method::HEAD),
-        }
+        HeadObjectSync { req: OssRequest::new(oss, Method::HEAD) }
     }
     /// Succeed only if the object is modified after the given time.
     ///
     /// 仅当对象在指定时间之后被修改时才成功。
     pub fn set_if_modified_since(mut self, if_modified_since: OffsetDateTime) -> Self {
-        self.req
-            .insert_header("If-Modified-Since", format_gmt(if_modified_since));
+        self.req.insert_header("If-Modified-Since", format_gmt(if_modified_since));
         self
     }
     /// Succeed only if the object is not modified after the given time.
     ///
     /// 仅当对象在指定时间之后未被修改时才成功。
     pub fn set_if_unmodified_since(mut self, if_unmodified_since: OffsetDateTime) -> Self {
-        self.req
-            .insert_header("If-Unmodified-Since", format_gmt(if_unmodified_since));
+        self.req.insert_header("If-Unmodified-Since", format_gmt(if_unmodified_since));
         self
     }
     /// Succeed only if the object ETag matches the given value.
@@ -81,8 +77,7 @@ impl HeadObjectSync {
                     .into_iter()
                     .map(|(key, value)| {
                         let key = key.to_string();
-                        let mut value = String::from_utf8(value.as_bytes().to_vec())
-                            .unwrap_or_else(|_| String::new());
+                        let mut value = String::from_utf8(value.as_bytes().to_vec()).unwrap_or_else(|_| String::new());
                         if &key == "etag" {
                             value = value.trim_matches('"').to_owned();
                         }
@@ -92,12 +87,10 @@ impl HeadObjectSync {
                 Ok(result)
             }
             _ => {
-                let x_oss_error = response.headers().get("x-oss-err").and_then(|header| {
-                    general_purpose::STANDARD
-                        .decode(header)
-                        .ok()
-                        .map(|v| Bytes::from(v))
-                });
+                let x_oss_error = response
+                    .headers()
+                    .get("x-oss-err")
+                    .and_then(|header| general_purpose::STANDARD.decode(header).ok().map(|v| Bytes::from(v)));
                 match x_oss_error {
                     None => Err(Error::OssInvalidError(status_code, Bytes::new())),
                     Some(response_bytes) => {

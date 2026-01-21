@@ -27,27 +27,20 @@ impl CopyObjectSync {
     pub(super) fn new(oss: Oss, copy_source: impl Into<String>) -> Self {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_header("x-oss-copy-source", copy_source.into());
-        CopyObjectSync {
-            req,
-            tags: HashMap::new(),
-        }
+        CopyObjectSync { req, tags: HashMap::new() }
     }
     /// Set object ACL.
     ///
     /// 设置对象 ACL。
     pub fn set_acl(mut self, acl: Acl) -> Self {
-        self.req
-            .insert_header("x-oss-object-acl", acl.to_string());
+        self.req.insert_header("x-oss-object-acl", acl.to_string());
         self
     }
     /// Set object storage class.
     ///
     /// 设置对象存储类型。
     pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
-        self.req.insert_header(
-            "x-oss-storage-class",
-            storage_class.to_string(),
-        );
+        self.req.insert_header("x-oss-storage-class", storage_class.to_string());
         self
     }
     /// Set custom object metadata.
@@ -60,8 +53,7 @@ impl CopyObjectSync {
     pub fn set_meta(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         let key = key.into();
         if !invalid_metadata_key(&key) {
-            self.req
-                .insert_header(format!("x-oss-meta-{}", key), value.into());
+            self.req.insert_header(format!("x-oss-meta-{}", key), value.into());
         }
         self
     }
@@ -69,20 +61,14 @@ impl CopyObjectSync {
     ///
     /// 仅当源对象在指定时间之后被修改时才复制。
     pub fn set_if_modified_since(mut self, if_modified_since: OffsetDateTime) -> Self {
-        self.req.insert_header(
-            "x-oss-copy-source-if-modified-since",
-            format_gmt(if_modified_since),
-        );
+        self.req.insert_header("x-oss-copy-source-if-modified-since", format_gmt(if_modified_since));
         self
     }
     /// Proceed only if the source is not modified after the given time.
     ///
     /// 仅当源对象在指定时间之后未被修改时才复制。
     pub fn set_if_unmodified_since(mut self, if_unmodified_since: OffsetDateTime) -> Self {
-        self.req.insert_header(
-            "x-oss-copy-source-if-unmodified-since",
-            format_gmt(if_unmodified_since),
-        );
+        self.req.insert_header("x-oss-copy-source-if-unmodified-since", format_gmt(if_unmodified_since));
         self
     }
     /// Copy only if the source ETag matches the given value.
@@ -93,8 +79,7 @@ impl CopyObjectSync {
     ///
     /// ETag 可用于检测数据变更和校验完整性。
     pub fn set_if_match(mut self, if_match: impl Into<String>) -> Self {
-        self.req
-            .insert_header("x-oss-copy-source-if-match", if_match.into());
+        self.req.insert_header("x-oss-copy-source-if-match", if_match.into());
         self
     }
     /// Copy only if the source ETag does not match the given value.
@@ -105,8 +90,7 @@ impl CopyObjectSync {
     ///
     /// ETag 可用于检测数据变更和校验完整性。
     pub fn set_if_none_match(mut self, if_none_match: impl Into<String>) -> Self {
-        self.req
-            .insert_header("x-oss-copy-source-if-none-match", if_none_match.into());
+        self.req.insert_header("x-oss-copy-source-if-none-match", if_none_match.into());
         self
     }
     /// Disallow overwriting objects with the same key.
@@ -127,8 +111,7 @@ impl CopyObjectSync {
     ///
     /// 使用本请求的元数据，忽略源对象元数据。
     pub fn set_metadata_directive(mut self) -> Self {
-        self.req
-            .insert_header("x-oss-metadata-directive", "REPLACE");
+        self.req.insert_header("x-oss-metadata-directive", "REPLACE");
         self
     }
     /// Use tags from this request, ignoring source tags.
@@ -151,11 +134,7 @@ impl CopyObjectSync {
                 if value.is_empty() {
                     url_encode(&key.to_string())
                 } else {
-                    format!(
-                        "{}={}",
-                        url_encode(&key.to_string()),
-                        url_encode(&value.to_string())
-                    )
+                    format!("{}={}", url_encode(&key.to_string()), url_encode(&value.to_string()))
                 }
             })
             .collect::<Vec<_>>()

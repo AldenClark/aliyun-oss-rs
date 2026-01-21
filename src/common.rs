@@ -1,38 +1,27 @@
 //! Common data definitions.
 //!
 //! 通用数据定义。
-#[cfg(feature = "async")]
+#[cfg(any(feature = "_async-base", feature = "_sync-base"))]
 use bytes::Bytes;
-#[cfg(feature = "sync")]
-use bytes::Bytes;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 use http_body_util::BodyExt;
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 use hyper::body::Incoming;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use serde_derive::{Deserialize, Serialize};
 use std::fmt;
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 use std::io::Read;
 use std::sync::OnceLock;
 use time::{OffsetDateTime, UtcOffset, format_description};
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 use ureq::Body;
 
 // -------------------------- Common functions --------------------------
 // Encode query parameter values (RFC 3986, space as %20).
-const URL_ENCODE: &AsciiSet = &NON_ALPHANUMERIC
-    .remove(b'-')
-    .remove(b'_')
-    .remove(b'.')
-    .remove(b'~');
+const URL_ENCODE: &AsciiSet = &NON_ALPHANUMERIC.remove(b'-').remove(b'_').remove(b'.').remove(b'~');
 // Encode object key path segments while preserving '/'.
-const URL_PATH_ENCODE: &AsciiSet = &NON_ALPHANUMERIC
-    .remove(b'-')
-    .remove(b'_')
-    .remove(b'.')
-    .remove(b'~')
-    .remove(b'/');
+const URL_PATH_ENCODE: &AsciiSet = &NON_ALPHANUMERIC.remove(b'-').remove(b'_').remove(b'.').remove(b'~').remove(b'/');
 #[inline]
 pub(crate) fn url_encode(input: &str) -> String {
     utf8_percent_encode(input, URL_ENCODE).to_string()
@@ -46,18 +35,16 @@ pub(crate) fn url_encode_path(input: &str) -> String {
 // Check if metadata keys are valid
 #[inline]
 pub(crate) fn invalid_metadata_key(input: &str) -> bool {
-    !input
-        .bytes()
-        .all(|b| b.is_ascii_alphanumeric() || b == b'-')
+    !input.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
 }
 
-#[cfg(feature = "async")]
+#[cfg(feature = "_async-base")]
 #[inline]
 pub(crate) async fn body_to_bytes(body: Incoming) -> Result<Bytes, hyper::Error> {
     Ok(body.collect().await?.to_bytes())
 }
 
-#[cfg(feature = "sync")]
+#[cfg(feature = "_sync-base")]
 #[inline]
 pub(crate) fn body_to_bytes_sync(body: Body) -> Result<Bytes, std::io::Error> {
     let mut reader = body.into_reader();
@@ -71,15 +58,10 @@ static GMT_FORMAT: OnceLock<Vec<format_description::FormatItem<'static>>> = Once
 #[inline]
 pub(crate) fn format_gmt(datetime: OffsetDateTime) -> String {
     let format = GMT_FORMAT.get_or_init(|| {
-        format_description::parse(
-            "[weekday repr:short], [day] [month repr:short] [year] [hour]:[minute]:[second] GMT",
-        )
-        .expect("valid format")
+        format_description::parse("[weekday repr:short], [day] [month repr:short] [year] [hour]:[minute]:[second] GMT")
+            .expect("valid format")
     });
-    datetime
-        .to_offset(UtcOffset::UTC)
-        .format(format)
-        .expect("formatting")
+    datetime.to_offset(UtcOffset::UTC).format(format).expect("formatting")
 }
 
 // -------------------------- Common data --------------------------
@@ -271,11 +253,9 @@ impl fmt::Display for ContentDisposition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ContentDisposition::Inline => f.write_str("inline"),
-            ContentDisposition::AttachmentWithNewName(file_name) => write!(
-                f,
-                "attachment;filename=\"{0}\";filename*=UTF-8''{0}",
-                url_encode(file_name)
-            ),
+            ContentDisposition::AttachmentWithNewName(file_name) => {
+                write!(f, "attachment;filename=\"{0}\";filename*=UTF-8''{0}", url_encode(file_name))
+            }
             ContentDisposition::Attachment => f.write_str("attachment"),
         }
     }
@@ -323,13 +303,7 @@ mod tests {
     fn test_cache_control_and_content_disposition() {
         assert_eq!(CacheControl::MaxAge(60).to_string(), "max-age=60");
         let name = "file name.txt";
-        let expected = format!(
-            "attachment;filename=\"{0}\";filename*=UTF-8''{0}",
-            url_encode(name)
-        );
-        assert_eq!(
-            ContentDisposition::AttachmentWithNewName(name.into()).to_string(),
-            expected
-        );
+        let expected = format!("attachment;filename=\"{0}\";filename*=UTF-8''{0}", url_encode(name));
+        assert_eq!(ContentDisposition::AttachmentWithNewName(name.into()).to_string(), expected);
     }
 }

@@ -26,10 +26,7 @@ impl UploadPart {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("partNumber", part_number.to_string());
         req.insert_query("uploadId", upload_id.into());
-        UploadPart {
-            req,
-            callback: None,
-        }
+        UploadPart { req, callback: None }
     }
     /// Set an upload progress callback, only effective for `send_file()`.
     /// ```
@@ -114,8 +111,7 @@ impl UploadPart {
         if content_size >= 5_000_000_000 {
             return Err(Error::InvalidFileSize);
         }
-        self.req
-            .insert_header(header::CONTENT_LENGTH.as_str(), content_size.to_string());
+        self.req.insert_header(header::CONTENT_LENGTH.as_str(), content_size.to_string());
         // Insert body
         self.req.set_body(Full::new(Bytes::from(content)));
         // Upload file

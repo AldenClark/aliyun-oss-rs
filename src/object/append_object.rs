@@ -1,7 +1,5 @@
 use crate::{
-    common::{
-        Acl, CacheControl, ContentDisposition, StorageClass, invalid_metadata_key, url_encode,
-    },
+    common::{Acl, CacheControl, ContentDisposition, StorageClass, invalid_metadata_key, url_encode},
     error::{Error, normal_error},
     request::{Oss, OssRequest},
 };
@@ -41,19 +39,13 @@ impl AppendObject {
         let mut req = OssRequest::new(oss, Method::POST);
         req.insert_query("append", "");
         req.insert_query("position", "0");
-        AppendObject {
-            req,
-            mime: None,
-            tags: HashMap::new(),
-            callback: None,
-        }
+        AppendObject { req, mime: None, tags: HashMap::new(), callback: None }
     }
     /// Set the starting position for the append content.
     ///
     /// 设置追加内容的起始位置。
     pub fn set_position(mut self, position: u32) -> Self {
-        self.req
-            .insert_query("position", position.to_string());
+        self.req.insert_query("position", position.to_string());
         self
     }
     /// Set the object's MIME type.
@@ -71,36 +63,28 @@ impl AppendObject {
     ///
     /// 设置对象 ACL。
     pub fn set_acl(mut self, acl: Acl) -> Self {
-        self.req
-            .insert_header("x-oss-object-acl", acl.to_string());
+        self.req.insert_header("x-oss-object-acl", acl.to_string());
         self
     }
     /// Set object storage class.
     ///
     /// 设置对象存储类型。
     pub fn set_storage_class(mut self, storage_class: StorageClass) -> Self {
-        self.req.insert_header(
-            "x-oss-storage-class",
-            storage_class.to_string(),
-        );
+        self.req.insert_header("x-oss-storage-class", storage_class.to_string());
         self
     }
     /// Set cache-control behavior when the object is downloaded.
     ///
     /// 设置对象下载时的缓存策略。
     pub fn set_cache_control(mut self, cache_control: CacheControl) -> Self {
-        self.req
-            .insert_header(header::CACHE_CONTROL.as_str(), cache_control.to_string());
+        self.req.insert_header(header::CACHE_CONTROL.as_str(), cache_control.to_string());
         self
     }
     /// Set content disposition for downloads.
     ///
     /// 设置下载时的内容呈现方式。
     pub fn set_content_disposition(mut self, content_disposition: ContentDisposition) -> Self {
-        self.req.insert_header(
-            header::CONTENT_DISPOSITION.as_str(),
-            content_disposition.to_string(),
-        );
+        self.req.insert_header(header::CONTENT_DISPOSITION.as_str(), content_disposition.to_string());
         self
     }
     /// Set custom object metadata.
@@ -113,8 +97,7 @@ impl AppendObject {
     pub fn set_meta(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         let key = key.into();
         if !invalid_metadata_key(&key) {
-            self.req
-                .insert_header(format!("x-oss-meta-{}", key), value.into());
+            self.req.insert_header(format!("x-oss-meta-{}", key), value.into());
         }
         self
     }
@@ -167,13 +150,7 @@ impl AppendObject {
             None => match infer::get_from_path(&file)? {
                 Some(ext) => ext.mime_type().to_owned(),
                 None => mime_guess::from_path(
-                    &self
-                        .req
-                        .oss
-                        .object
-                        .clone()
-                        .map(|v| v.to_string())
-                        .unwrap_or_else(|| String::new()),
+                    &self.req.oss.object.clone().map(|v| v.to_string()).unwrap_or_else(|| String::new()),
                 )
                 .first()
                 .map(|v| v.to_string())
@@ -181,8 +158,7 @@ impl AppendObject {
                 .to_string(),
             },
         };
-        self.req
-            .insert_header(header::CONTENT_TYPE.as_str(), file_type);
+        self.req.insert_header(header::CONTENT_TYPE.as_str(), file_type);
         // Insert tags
         let tags = self
             .tags
@@ -191,11 +167,7 @@ impl AppendObject {
                 if value.is_empty() {
                     url_encode(&key.to_string())
                 } else {
-                    format!(
-                        "{}={}",
-                        url_encode(&key.to_string()),
-                        url_encode(&value.to_string())
-                    )
+                    format!("{}={}", url_encode(&key.to_string()), url_encode(&value.to_string()))
                 }
             })
             .collect::<Vec<_>>()
@@ -210,10 +182,7 @@ impl AppendObject {
         if file_size >= 5_368_709_120 {
             return Err(Error::InvalidFileSize);
         }
-        self.req.insert_header(
-            header::CONTENT_LENGTH.as_str(),
-            file_size.to_string(),
-        );
+        self.req.insert_header(header::CONTENT_LENGTH.as_str(), file_size.to_string());
         // Initialize the data stream for reading file content
         let buf = BufReader::with_capacity(131072, file);
         let stream = ReaderStream::with_capacity(buf, 16384);
@@ -256,22 +225,14 @@ impl AppendObject {
         if content_size >= 5_368_709_120 {
             return Err(Error::InvalidFileSize);
         }
-        self.req.insert_header(
-            header::CONTENT_LENGTH.as_str(),
-            content_size.to_string(),
-        );
+        self.req.insert_header(header::CONTENT_LENGTH.as_str(), content_size.to_string());
         // Determine file MIME type
         let content_type = match self.mime {
             Some(mime) => mime,
             None => match infer::get(&content) {
                 Some(ext) => ext.mime_type().to_string(),
                 None => mime_guess::from_path(
-                    self.req
-                        .oss
-                        .object
-                        .clone()
-                        .map(|v| v.to_string())
-                        .unwrap_or_else(|| String::new().into()),
+                    self.req.oss.object.clone().map(|v| v.to_string()).unwrap_or_else(|| String::new().into()),
                 )
                 .first()
                 .map(|v| v.to_string())
@@ -279,8 +240,7 @@ impl AppendObject {
                 .to_string(),
             },
         };
-        self.req
-            .insert_header(header::CONTENT_TYPE.as_str(), content_type);
+        self.req.insert_header(header::CONTENT_TYPE.as_str(), content_type);
         // Insert tags
         let tags = self
             .tags
@@ -289,11 +249,7 @@ impl AppendObject {
                 if value.is_empty() {
                     url_encode(&key.to_string())
                 } else {
-                    format!(
-                        "{}={}",
-                        url_encode(&key.to_string()),
-                        url_encode(&value.to_string())
-                    )
+                    format!("{}={}", url_encode(&key.to_string()), url_encode(&value.to_string()))
                 }
             })
             .collect::<Vec<_>>()

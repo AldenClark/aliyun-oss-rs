@@ -29,10 +29,7 @@ impl DelObjectsSync {
         req.insert_query("delete", "");
         let len = files.len();
         if len == 0 {
-            DelObjectsSync {
-                req,
-                objects: HashSet::new(),
-            }
+            DelObjectsSync { req, objects: HashSet::new() }
         } else {
             let mut objects = HashSet::with_capacity(len);
             for object in files {
@@ -63,11 +60,7 @@ impl DelObjectsSync {
         // Generate body
         let body = format!(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Delete><Quiet>true</Quiet>{}</Delete>",
-            self.objects
-                .iter()
-                .map(|v| format!("<Object><Key>{}</Key></Object>", v))
-                .collect::<Vec<_>>()
-                .join("")
+            self.objects.iter().map(|v| format!("<Object><Key>{}</Key></Object>", v)).collect::<Vec<_>>().join("")
         );
         // Calculate body length
         let body_len = body.len();
@@ -79,8 +72,7 @@ impl DelObjectsSync {
         // Insert body content
         self.req.set_body(body.into_bytes());
         // Insert header content
-        self.req
-            .insert_header("Content-Length", body_len.to_string());
+        self.req.insert_header("Content-Length", body_len.to_string());
         self.req.insert_header("Content-MD5", body_md5);
         // Build the HTTP request
         let response = self.req.send_to_oss()?;

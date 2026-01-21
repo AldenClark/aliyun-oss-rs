@@ -24,13 +24,8 @@ impl PutBucketTagsSync {
         let mut req = OssRequest::new(oss, Method::PUT);
         req.insert_query("tagging", "");
         let mut tagging = BucketTagging::default();
-        tagging.tag_set.tags = tags
-            .into_iter()
-            .map(|(key, value)| Tag {
-                key: key.into(),
-                value: Some(value.into()),
-            })
-            .collect();
+        tagging.tag_set.tags =
+            tags.into_iter().map(|(key, value)| Tag { key: key.into(), value: Some(value.into()) }).collect();
         PutBucketTagsSync { req, tagging }
     }
 
@@ -41,10 +36,7 @@ impl PutBucketTagsSync {
         self.tagging
             .tag_set
             .tags
-            .extend(tags.into_iter().map(|(key, value)| Tag {
-                key: key.into(),
-                value: Some(value.into()),
-            }));
+            .extend(tags.into_iter().map(|(key, value)| Tag { key: key.into(), value: Some(value.into()) }));
         self
     }
 
